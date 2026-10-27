@@ -1,5 +1,6 @@
 /* ============================================================
-   8UR STORY — script.js  v2.3 FINAL (Mobile Menu + Audio Fix)
+   8UR STORY — script.js  v2.4 FINAL
+   (Mobile Menu + Audio Fix + 12 Testimoni Marquee + 1 Min Timer)
    ============================================================ */
 'use strict';
 
@@ -70,7 +71,17 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
-     2. CUSTOM CURSOR
+     2. AUTO-SLIDE MARQUEE TESTIMONI (TANPA PUTUS)
+  ══════════════════════════════════════ */
+  const testimonialsTrack = document.getElementById('testimonials-track');
+  if (testimonialsTrack && !testimonialsTrack.dataset.cloned) {
+    // Gandakan kartu testimoni secara otomatis agar geseran menyambung mulus tanpa jeda kosong
+    testimonialsTrack.innerHTML += testimonialsTrack.innerHTML;
+    testimonialsTrack.dataset.cloned = 'true';
+  }
+
+  /* ══════════════════════════════════════
+     3. CUSTOM CURSOR & SCROLL REVEAL
   ══════════════════════════════════════ */
   const dot     = document.querySelector('.cursor-dot');
   const outline = document.querySelector('.cursor-outline');
@@ -89,9 +100,6 @@ document.addEventListener('DOMContentLoaded', function () {
     animateCursor();
   }
 
-  /* ══════════════════════════════════════
-     3. SCROLL REVEAL & COUNTER
-  ══════════════════════════════════════ */
   const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
   if (revealEls.length > 0) {
     if ('IntersectionObserver' in window) {
@@ -402,16 +410,24 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
-     8. CHECKOUT PAGE + AUDIO PEMBAYARAN DITERIMA (SUPPORT .MP3 & .mp3 DI HP/RENDER)
+     8. CHECKOUT PAGE + TIMER 1 MENIT + POP-UP GAGAL + AUDIO SUKSES
   ══════════════════════════════════════ */
-  const btnConfirm   = document.getElementById('btn-confirm-order');
-  const paymentModal = document.getElementById('payment-modal');
-  const successModal = document.getElementById('success-modal');
-  const btnSubmitPay = document.getElementById('btn-submit-payment');
-  const btnCancelPay = document.getElementById('btn-cancel-payment');
-  const summaryEl    = document.getElementById('order-summary');
+  const btnConfirm     = document.getElementById('btn-confirm-order');
+  const paymentModal   = document.getElementById('payment-modal');
+  const successModal   = document.getElementById('success-modal');
+  const failedModal    = document.getElementById('failed-modal');
+  const btnSubmitPay   = document.getElementById('btn-submit-payment');
+  const btnCancelPay   = document.getElementById('btn-cancel-payment');
+  const btnRetryPay    = document.getElementById('btn-retry-payment');
+  const btnCloseFailed = document.getElementById('btn-close-failed');
+  const summaryEl      = document.getElementById('order-summary');
+  const timerDisplay   = document.getElementById('payment-timer');
+  const countdownBox   = document.getElementById('countdown-box');
 
-  /* Deteksi Otomatis File Audio (.MP3 huruf besar maupun .mp3 huruf kecil untuk server Linux/Render) */
+  let paymentTimerInterval = null;
+  let remainingSeconds     = 60;
+
+  /* Audio Pembayaran Diterima (.MP3 & .mp3 fallback) */
   const paymentSuccessSound = new Audio();
   paymentSuccessSound.preload = 'auto';
   paymentSuccessSound.src = 'sound/pembayaran%20diterima.MP3';
@@ -421,7 +437,6 @@ document.addEventListener('DOMContentLoaded', function () {
     paymentSuccessSound.load();
   });
 
-  /* Silent Unlock untuk Browser HP (Tanpa suara klik sama sekali, agar saat klik Sudah Bayar 100% berbunyi) */
   let audioUnlocked = false;
   function unlockAudioSilently() {
     if (audioUnlocked) return;
@@ -437,6 +452,26 @@ document.addEventListener('DOMContentLoaded', function () {
         paymentSuccessSound.muted = false;
       });
     }
+  }
+
+  /* Nada Peringatan Halus Saat Waktu Habis (Web Audio API) */
+  function playTimeoutTone() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(320, ctx.currentTime);
+      osc.frequency.setValueAtTime(220, ctx.currentTime + 0.18);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.45);
+    } catch (e) {}
   }
 
   let checkoutTotal = 0;
@@ -468,19 +503,86 @@ document.addEventListener('DOMContentLoaded', function () {
     summaryEl.innerHTML = html;
   }
 
-  function setStep(step) {
+  function setStep(step, isFailed = false) {
     document.querySelectorAll('.checkout-step-item').forEach((el, i) => {
-      el.classList.remove('active', 'done');
+      el.classList.remove('active', 'done', 'failed');
       if (i < step)   el.classList.add('done');
-      if (i === step) el.classList.add('active');
+      if (i === step) el.classList.add(isFailed ? 'failed' : 'active');
     });
   }
   setStep(0);
 
+  function stopPaymentTimer() {
+    if (paymentTimerInterval) {
+      clearInterval(paymentTimerInterval);
+      paymentTimerInterval = null;
+    }
+  }
+
+  function startPaymentTimer() {
+    stopPaymentTimer();
+    remainingSeconds = 60; // 1 Menit (60 Detik)
+    if (countdownBox) countdownBox.classList.remove('danger');
+    if (timerDisplay) timerDisplay.textContent = '01:00';
+
+    paymentTimerInterval = setInterval(() => {
+      remainingSeconds--;
+      const mins = String(Math.floor(remainingSeconds / 60)).padStart(2, '0');
+      const secs = String(remainingSeconds % 60).padStart(2, '0');
+      if (timerDisplay) timerDisplay.textContent = `${mins}:${secs}`;
+
+      // Berkedip merah saat sisa <= 15 detik
+      if (remainingSeconds <= 15 && countdownBox) {
+        countdownBox.classList.add('danger');
+      }
+
+      // Jika waktu habis (00:00) dan belum upload/bayar
+      if (remainingSeconds <= 0) {
+        stopPaymentTimer();
+        if (paymentModal) paymentModal.style.display = 'none';
+        setStep(1, true);
+        playTimeoutTone();
+        showToast('Waktu pembayaran 1 menit telah habis!', '⏰');
+        if (failedModal) failedModal.style.display = 'flex';
+      }
+    }, 1000);
+  }
+
+  function openPaymentPopup() {
+    const selected = document.querySelector('input[name="payment"]:checked')?.value;
+    if (!selected) { showToast('Pilih metode pembayaran terlebih dahulu', '⚠️'); return; }
+
+    setStep(1);
+
+    document.getElementById('modal-bank-name').textContent = selected === 'QRIS'
+      ? 'Pembayaran via QRIS' : `Transfer Virtual Account ${selected}`;
+    document.getElementById('modal-total-pay').textContent =
+      `Total Tagihan: Rp ${checkoutTotal.toLocaleString('id-ID')}`;
+
+    const qrImg   = document.getElementById('qr-image');
+    const vaBlock = document.getElementById('rekening-container');
+    const vaCode  = document.getElementById('va-code');
+
+    if (selected === 'QRIS') {
+      qrImg.style.display   = 'block';
+      vaBlock.style.display = 'none';
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=QRIS_8URSTORY_${finalOrderID}_TOTAL_${checkoutTotal}`;
+    } else {
+      qrImg.style.display   = 'none';
+      vaBlock.style.display = 'flex';
+      const prefixes = { BCA: '3901', MANDIRI: '89508', BRI: '8881' };
+      vaCode.textContent = (prefixes[selected] || '3901') + ' ' + Math.floor(10000000 + Math.random() * 90000000);
+    }
+
+    if (failedModal) failedModal.style.display = 'none';
+    if (paymentModal) paymentModal.style.display = 'flex';
+    startPaymentTimer(); // Mulai hitungan mundur 1 menit
+  }
+
   if (btnConfirm) {
     btnConfirm.addEventListener('click', function (e) {
       e.preventDefault();
-      unlockAudioSilently(); // Membuka izin audio HP secara hening (0% suara)
+      unlockAudioSilently();
 
       const cart = JSON.parse(localStorage.getItem('8urStoryCart')) || [];
       if (cart.length === 0) { showToast('Pesanan kosong! Silakan belanja dulu.', '⚠️'); return; }
@@ -497,41 +599,39 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!phone) { showToast('Mohon isi Nomor WhatsApp Aktif', '⚠️'); phoneEl?.focus(); return; }
       if (!addr)  { showToast('Mohon isi Alamat Pengiriman Lengkap', '⚠️'); addrEl?.focus(); return; }
 
-      const selected = document.querySelector('input[name="payment"]:checked')?.value;
-      if (!selected) { showToast('Pilih metode pembayaran terlebih dahulu', '⚠️'); return; }
-
-      setStep(1);
-
-      document.getElementById('modal-bank-name').textContent = selected === 'QRIS'
-        ? 'Pembayaran via QRIS' : `Transfer Virtual Account ${selected}`;
-      document.getElementById('modal-total-pay').textContent =
-        `Total Tagihan: Rp ${checkoutTotal.toLocaleString('id-ID')}`;
-
-      const qrImg   = document.getElementById('qr-image');
-      const vaBlock = document.getElementById('rekening-container');
-      const vaCode  = document.getElementById('va-code');
-
-      if (selected === 'QRIS') {
-        qrImg.style.display   = 'block';
-        vaBlock.style.display = 'none';
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=QRIS_8URSTORY_${finalOrderID}_TOTAL_${checkoutTotal}`;
-      } else {
-        qrImg.style.display   = 'none';
-        vaBlock.style.display = 'flex';
-        const prefixes = { BCA: '3901', MANDIRI: '89508', BRI: '8881' };
-        vaCode.textContent = (prefixes[selected] || '3901') + ' ' + Math.floor(10000000 + Math.random() * 90000000);
-      }
-      paymentModal.style.display = 'flex';
+      openPaymentPopup();
     });
   }
 
+  /* Tombol Batal / Tutup di Pop-Up Pembayaran */
   if (btnCancelPay) {
     btnCancelPay.addEventListener('click', function () {
+      stopPaymentTimer();
       paymentModal.style.display = 'none';
       setStep(0);
     });
   }
 
+  /* Tombol Ulangi Pembayaran di Pop-Up Gagal */
+  if (btnRetryPay) {
+    btnRetryPay.addEventListener('click', function () {
+      unlockAudioSilently();
+      finalOrderID = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+      openPaymentPopup();
+      showToast('Sesi pembayaran baru (1 menit) dimulai!', '🔄');
+    });
+  }
+
+  /* Tombol Kembali ke Form di Pop-Up Gagal */
+  if (btnCloseFailed) {
+    btnCloseFailed.addEventListener('click', function () {
+      stopPaymentTimer();
+      failedModal.style.display = 'none';
+      setStep(0);
+    });
+  }
+
+  /* Tombol Saya Sudah Bayar */
   if (btnSubmitPay) {
     btnSubmitPay.addEventListener('click', function () {
       const proof = document.getElementById('payment-proof');
@@ -540,10 +640,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
+      stopPaymentTimer(); // Hentikan timer karena pembayaran berhasil tepat waktu
       paymentModal.style.display = 'none';
       setStep(2);
 
-      /* Putar Suara Pembayaran Diterima tepat saat Pop-Up Sukses muncul */
       paymentSuccessSound.muted = false;
       paymentSuccessSound.currentTime = 0;
       paymentSuccessSound.play().catch(() => {
@@ -562,7 +662,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
-     9. ACCORDION, FILTER KATALOG, SEARCH & MODAL
+     9. ACCORDION, FILTER KATALOG, SEARCH & MODAL OVERLAY
   ══════════════════════════════════════ */
   document.querySelectorAll('.faq-item').forEach(item => {
     const q = item.querySelector('.faq-question');
@@ -616,6 +716,11 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', e => {
       if (e.target === overlay && overlay.id === 'payment-modal') {
+        stopPaymentTimer();
+        overlay.style.display = 'none';
+        setStep(0);
+      }
+      if (e.target === overlay && overlay.id === 'failed-modal') {
         overlay.style.display = 'none';
         setStep(0);
       }
