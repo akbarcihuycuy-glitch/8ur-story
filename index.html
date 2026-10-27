@@ -5,9 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>8UR STORY - Custom T-Shirt & Streetwear</title>
     <link rel="icon" href="images/logo.png">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.6">
+    <!-- Pengaman Ganda Animasi Auto-Slide Testimoni (Anti-Cache) -->
+    <style>
+        .testimonials-marquee-wrapper {
+            position: relative;
+            width: 100%;
+            overflow: hidden !important;
+            padding: 12px 0 20px;
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+        }
+        .testimonials-track {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 20px;
+            width: max-content !important;
+            animation: marqueeSlideForce 65s linear infinite !important;
+        }
+        .testimonials-track:hover,
+        .testimonials-track:active {
+            animation-play-state: paused !important;
+        }
+        .testimonials-track .testimonial-card {
+            width: 320px !important;
+            min-width: 320px !important;
+            max-width: 320px !important;
+            flex-shrink: 0 !important;
+            margin: 0 !important;
+        }
+        @keyframes marqueeSlideForce {
+            0%   { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+        }
+        @media (max-width: 768px) {
+            .testimonials-track { gap: 14px; animation-duration: 55s !important; }
+            .testimonials-track .testimonial-card {
+                width: 265px !important;
+                min-width: 265px !important;
+                max-width: 265px !important;
+                padding: 18px !important;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div id="page-progress"></div>
+
+    <!-- HEADER -->
     <header>
         <div class="logo-container">
             <a href="index.html"><img src="images/logo.png" alt="8UR STORY" class="logo"></a>
@@ -29,6 +75,7 @@
         </div>
     </header>
 
+    <!-- HERO SECTION -->
     <section class="hero-section">
         <div class="hero-content">
             <span class="hero-badge">🔥 PREMIUM CUSTOM APPAREL</span>
@@ -41,6 +88,7 @@
         </div>
     </section>
 
+    <!-- KEUNGGULAN BELANJA -->
     <section class="features-section container reveal">
         <div class="features-grid">
             <div class="feature-card">
@@ -66,11 +114,11 @@
         </div>
     </section>
 
+    <!-- KATALOG SEMUA PRODUK (5 PRODUK) -->
     <main class="container reveal" id="katalog">
         <h2 class="section-title">Katalog Produk 8UR STORY</h2>
         <p class="section-subtitle">Pilih produk dasar favoritmu, tentukan warna, dan unggah desain kebanggaanmu.</p>
 
-        <!-- PENAMBAHAN TOMBOL FILTER AKSESORIS -->
         <div class="catalog-filters">
             <button class="filter-btn active" data-filter="all">Semua Produk</button>
             <button class="filter-btn" data-filter="kaos">Koleksi Kaos</button>
@@ -118,7 +166,7 @@
                 </div>
             </a>
 
-            <!-- 4: Topi Baru -->
+            <!-- 4: Topi -->
             <a href="product-topi.html" class="product-card" data-category="aksesoris" data-name="topi baseball cap">
                 <span class="product-badge badge-new">Baru</span>
                 <div class="product-img-wrapper"><img src="images/topi.png" alt="Topi Custom"></div>
@@ -131,7 +179,7 @@
                 </div>
             </a>
 
-            <!-- 5: Bantal Baru -->
+            <!-- 5: Bantal -->
             <a href="product-bantal.html" class="product-card" data-category="aksesoris" data-name="bantal custom sofa kado">
                 <span class="product-badge">Gift Idea</span>
                 <div class="product-img-wrapper"><img src="images/bantal-1.png" alt="Bantal Custom"></div>
@@ -146,6 +194,7 @@
         </div>
     </main>
 
+    <!-- TENTANG KAMI -->
     <section class="about-section reveal" id="tentang-kami">
         <div class="container about-container">
             <div class="about-image">
@@ -174,6 +223,7 @@
         </div>
     </section>
 
+    <!-- CARA ORDER -->
     <section class="steps-section container reveal" id="cara-order">
         <h2 class="section-title">4 Langkah Mudah Pesan Custom</h2>
         <p class="section-subtitle">Proses pemesanan praktis tanpa ribet, langsung dari layar perangkatmu.</p>
@@ -201,7 +251,7 @@
         </div>
     </section>
 
-<!-- TESTIMONI PELANGGAN (12 ULASAN AUTO-SLIDE KESAMPING) -->
+    <!-- TESTIMONI PELANGGAN (12 ULASAN AUTO-SLIDE KESAMPING) -->
     <section class="testimonials-section reveal">
         <div class="container" style="padding-bottom: 10px;">
             <h2 class="section-title">Apa Kata Mereka?</h2>
@@ -322,6 +372,7 @@
         </div>
     </section>
 
+    <!-- FAQ -->
     <section class="faq-section container reveal" id="faq">
         <h2 class="section-title">Pertanyaan Umum (FAQ)</h2>
         <p class="section-subtitle">Temukan jawaban cepat untuk pertanyaan yang paling sering diajukan pembeli.</p>
@@ -337,7 +388,7 @@
             </div>
             <div class="faq-item">
                 <button class="faq-question"><span>Bagaimana rincian penyesuaian harga berdasarkan ukuran dan warna?</span><span class="faq-icon">+</span></button>
-                <div class="faq-answer"><p>Untuk kaos berwarna selain putih dikenakan tambahan +Rp 5.000 karena membutuhkan lapisan tinta putih dasar (underbase). Sedangkan setiap kenaikan ukuran akan otomatis menyesuaikan harga dasar produk (bisa dilihat di pilihan menu ukuran).</p></div>
+                <div class="faq-answer"><p>Untuk produk berwarna selain putih dikenakan tambahan +Rp 5.000 karena membutuhkan lapisan tinta putih dasar (underbase). Sedangkan setiap kenaikan ukuran akan otomatis menyesuaikan harga dasar produk (bisa dilihat di pilihan menu ukuran).</p></div>
             </div>
             <div class="faq-item">
                 <button class="faq-question"><span>Berapa lama waktu pengerjaan pesanan saya?</span><span class="faq-icon">+</span></button>
@@ -346,6 +397,7 @@
         </div>
     </section>
 
+    <!-- FOOTER -->
     <footer class="site-footer">
         <div class="container footer-grid">
             <div class="footer-col">
@@ -376,6 +428,6 @@
             <p>&copy; 2026 8UR STORY Official. All Rights Reserved.</p>
         </div>
     </footer>
-    <script src="script.js"></script>
+    <script src="script.js?v=2.6"></script>
 </body>
 </html>
