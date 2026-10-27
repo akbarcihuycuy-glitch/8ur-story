@@ -1,12 +1,12 @@
 /* ============================================================
-   8UR STORY — script.js  v2.2 FINAL (Full Integrated)
+   8UR STORY — script.js  v2.3 FINAL (Mobile Menu + Audio Fix)
    ============================================================ */
 'use strict';
 
 document.addEventListener('DOMContentLoaded', function () {
 
   /* ══════════════════════════════════════
-     0. LOADING SCREEN
+     0. LOADING SCREEN & SCROLL PROGRESS
   ══════════════════════════════════════ */
   const loader = document.getElementById('loader');
   if (loader) {
@@ -16,9 +16,6 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(() => loader && loader.classList.add('hidden'), 2500);
   }
 
-  /* ══════════════════════════════════════
-     1. SCROLL PROGRESS BAR
-  ══════════════════════════════════════ */
   const progressBar = document.getElementById('page-progress');
   if (progressBar) {
     window.addEventListener('scroll', () => {
@@ -26,6 +23,48 @@ document.addEventListener('DOMContentLoaded', function () {
       const scrollH   = document.documentElement.scrollHeight - document.documentElement.clientHeight;
       if (scrollH > 0) {
         progressBar.style.width = (scrollTop / scrollH * 100) + '%';
+      }
+    });
+  }
+
+  /* ══════════════════════════════════════
+     1. AUTO HAMBURGER MENU (UNTUK LAYAR HP)
+  ══════════════════════════════════════ */
+  const header      = document.querySelector('header');
+  const headerRight = document.querySelector('.header-right');
+  const navLinks    = document.querySelector('.nav-links');
+
+  if (header) {
+    window.addEventListener('scroll', () => {
+      header.classList.toggle('scrolled', window.scrollY > 20);
+    });
+  }
+
+  if (headerRight && navLinks && !document.querySelector('.hamburger-btn')) {
+    const burgerBtn = document.createElement('button');
+    burgerBtn.type = 'button';
+    burgerBtn.className = 'hamburger-btn';
+    burgerBtn.setAttribute('aria-label', 'Buka Menu Navigasi');
+    burgerBtn.innerHTML = '<span></span><span></span><span></span>';
+    headerRight.appendChild(burgerBtn);
+
+    burgerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      burgerBtn.classList.toggle('open');
+      navLinks.classList.toggle('mobile-open');
+    });
+
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        burgerBtn.classList.remove('open');
+        navLinks.classList.remove('mobile-open');
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!header.contains(e.target)) {
+        burgerBtn.classList.remove('open');
+        navLinks.classList.remove('mobile-open');
       }
     });
   }
@@ -51,17 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
-     3. NAVBAR SCROLL EFFECT
-  ══════════════════════════════════════ */
-  const header = document.querySelector('header');
-  if (header) {
-    window.addEventListener('scroll', () => {
-      header.classList.toggle('scrolled', window.scrollY > 20);
-    });
-  }
-
-  /* ══════════════════════════════════════
-     4. SCROLL REVEAL
+     3. SCROLL REVEAL & COUNTER
   ══════════════════════════════════════ */
   const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
   if (revealEls.length > 0) {
@@ -73,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
             revealObserver.unobserve(entry.target);
           }
         });
-      }, { threshold: 0.1 });
+      }, { threshold: 0.08 });
       revealEls.forEach(el => revealObserver.observe(el));
     } else {
       revealEls.forEach(el => el.classList.add('active'));
@@ -81,34 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
-     5. ANIMATED COUNTER
-  ══════════════════════════════════════ */
-  function animateCounter(el) {
-    const target = parseInt(el.getAttribute('data-target')) || 0;
-    const suffix = el.getAttribute('data-suffix') || '';
-    let current = 0;
-    const step = Math.ceil(target / 60);
-    const timer = setInterval(() => {
-      current = Math.min(current + step, target);
-      el.textContent = current.toLocaleString('id-ID') + suffix;
-      if (current >= target) clearInterval(timer);
-    }, 25);
-  }
-  const counterEls = document.querySelectorAll('.counter-val');
-  if (counterEls.length && 'IntersectionObserver' in window) {
-    const counterObs = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          animateCounter(entry.target);
-          counterObs.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.5 });
-    counterEls.forEach(el => counterObs.observe(el));
-  }
-
-  /* ══════════════════════════════════════
-     6. TOAST NOTIFICATION
+     4. TOAST NOTIFICATION & CART BADGE
   ══════════════════════════════════════ */
   window.showToast = function (msg, icon = '✅') {
     let container = document.getElementById('toast-container');
@@ -127,9 +129,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 3000);
   };
 
-  /* ══════════════════════════════════════
-     7. CART BADGE UPDATE
-  ══════════════════════════════════════ */
   function updateCartCount() {
     const badges = document.querySelectorAll('#cart-count');
     let cart = JSON.parse(localStorage.getItem('8urStoryCart')) || [];
@@ -148,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
   updateCartCount();
 
   /* ══════════════════════════════════════
-     8. PRODUCT PAGE LOGIC (Hitung Harga & Add to Cart)
+     5. PRODUCT PAGE LOGIC
   ══════════════════════════════════════ */
   const priceDisplay = document.getElementById('total-price');
   if (priceDisplay) {
@@ -241,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
-     9. SLIDER GAMBAR PRODUK, QTY STEPPER & UPLOAD PREVIEW
+     6. SLIDER GAMBAR PRODUK, QTY STEPPER & UPLOAD PREVIEW
   ══════════════════════════════════════ */
   let currentImgIndex = 0;
   const thumbImages  = document.querySelectorAll('.thumbnail-gallery img');
@@ -332,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
-     10. CART PAGE (Keranjang + Tombol Plus/Minus)
+     7. CART PAGE
   ══════════════════════════════════════ */
   const cartContainer = document.getElementById('cart-items-container');
   if (cartContainer) {
@@ -346,10 +345,10 @@ document.addEventListener('DOMContentLoaded', function () {
       if (cart.length === 0) {
         cartContainer.innerHTML = `
           <div class="empty-cart">
-            <div style="font-size:4rem;margin-bottom:16px">🛒</div>
+            <div style="font-size:3.5rem;margin-bottom:12px">🛒</div>
             <h3>Keranjang Belanja Anda Kosong</h3>
-            <p style="margin-top:8px; font-size:14px">Yuk pilih produk dasar favoritmu dan mulai kustomisasi sekarang!</p>
-            <a href="index.html#katalog" style="display:inline-block;margin-top:20px;background:var(--red);color:#fff;padding:12px 28px;border-radius:50px;font-weight:700;text-decoration:none">Mulai Belanja</a>
+            <p style="margin-top:6px; font-size:13.5px">Yuk pilih produk dasar favoritmu dan mulai kustomisasi sekarang!</p>
+            <a href="index.html#katalog" style="display:inline-block;margin-top:18px;background:var(--red);color:#fff;padding:12px 26px;border-radius:50px;font-weight:700;text-decoration:none;font-size:13.5px">Mulai Belanja</a>
           </div>`;
         if (totalEl) totalEl.style.display = 'none';
         if (checkoutBtn) checkoutBtn.style.display = 'none';
@@ -361,21 +360,21 @@ document.addEventListener('DOMContentLoaded', function () {
       cart.forEach((item, idx) => {
         grand += item.totalPrice;
         cartContainer.innerHTML += `
-          <div class="cart-item" style="display:flex;gap:20px;align-items:center;padding:20px 0;border-bottom:1px solid var(--border)">
-            <img src="${item.image}" alt="${item.product}" style="width:90px;height:90px;object-fit:contain;border-radius:10px;background:var(--light);border:1px solid var(--border);padding:6px" onerror="this.src='images/logo.png'">
-            <div style="flex:1">
-              <h4 style="font-size:15.5px;font-weight:700;margin-bottom:4px">${item.product}</h4>
-              <p style="font-size:12.5px;color:var(--muted)">Warna: ${item.color} | Ukuran: ${item.size}</p>
-              <p style="font-size:12.5px;color:var(--muted)">File Desain: ${item.designFile}</p>
-              <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
-                <button onclick="changeQtyCart(${idx},-1)" style="width:28px;height:28px;border:1.5px solid var(--border);border-radius:50%;background:#fff;font-weight:700;cursor:pointer;font-size:16px">−</button>
-                <span style="font-weight:700">${item.qty}</span>
-                <button onclick="changeQtyCart(${idx},1)"  style="width:28px;height:28px;border:1.5px solid var(--border);border-radius:50%;background:#fff;font-weight:700;cursor:pointer;font-size:16px">+</button>
+          <div class="cart-item">
+            <img src="${item.image}" alt="${item.product}" onerror="this.src='images/logo.png'">
+            <div style="flex:1;min-width:140px">
+              <h4 style="font-size:14.5px;font-weight:700;margin-bottom:3px">${item.product}</h4>
+              <p style="font-size:12px;color:var(--muted)">Warna: ${item.color} | Ukuran: ${item.size}</p>
+              <p style="font-size:12px;color:var(--muted)">File: ${item.designFile}</p>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+                <button onclick="changeQtyCart(${idx},-1)" style="width:28px;height:28px;border:1.5px solid var(--border);border-radius:50%;background:#fff;font-weight:700;cursor:pointer;font-size:15px">−</button>
+                <span style="font-weight:700;font-size:14px">${item.qty}</span>
+                <button onclick="changeQtyCart(${idx},1)"  style="width:28px;height:28px;border:1.5px solid var(--border);border-radius:50%;background:#fff;font-weight:700;cursor:pointer;font-size:15px">+</button>
               </div>
             </div>
-            <div style="text-align:right;min-width:110px">
-              <strong style="font-size:16px;color:var(--red)">Rp ${item.totalPrice.toLocaleString('id-ID')}</strong><br>
-              <button onclick="removeItem(${idx})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;margin-top:6px;text-decoration:underline">Hapus</button>
+            <div style="text-align:right;min-width:95px;margin-left:auto">
+              <strong style="font-size:14.5px;color:var(--red)">Rp ${item.totalPrice.toLocaleString('id-ID')}</strong><br>
+              <button onclick="removeItem(${idx})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11.5px;margin-top:5px;text-decoration:underline">Hapus</button>
             </div>
           </div>`;
       });
@@ -403,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
-     11. CHECKOUT PAGE + EFEK SUARA PEMBAYARAN DITERIMA
+     8. CHECKOUT PAGE + AUDIO PEMBAYARAN DITERIMA (SUPPORT .MP3 & .mp3 DI HP/RENDER)
   ══════════════════════════════════════ */
   const btnConfirm   = document.getElementById('btn-confirm-order');
   const paymentModal = document.getElementById('payment-modal');
@@ -412,7 +411,33 @@ document.addEventListener('DOMContentLoaded', function () {
   const btnCancelPay = document.getElementById('btn-cancel-payment');
   const summaryEl    = document.getElementById('order-summary');
 
-  const paymentSuccessSound = new Audio('sound/pembayaran diterima.mp3');
+  /* Deteksi Otomatis File Audio (.MP3 huruf besar maupun .mp3 huruf kecil untuk server Linux/Render) */
+  const paymentSuccessSound = new Audio();
+  paymentSuccessSound.preload = 'auto';
+  paymentSuccessSound.src = 'sound/pembayaran%20diterima.MP3';
+  paymentSuccessSound.addEventListener('error', function fallbackAudio() {
+    paymentSuccessSound.removeEventListener('error', fallbackAudio);
+    paymentSuccessSound.src = 'sound/pembayaran%20diterima.mp3';
+    paymentSuccessSound.load();
+  });
+
+  /* Silent Unlock untuk Browser HP (Tanpa suara klik sama sekali, agar saat klik Sudah Bayar 100% berbunyi) */
+  let audioUnlocked = false;
+  function unlockAudioSilently() {
+    if (audioUnlocked) return;
+    paymentSuccessSound.muted = true;
+    const p = paymentSuccessSound.play();
+    if (p !== undefined) {
+      p.then(() => {
+        paymentSuccessSound.pause();
+        paymentSuccessSound.currentTime = 0;
+        paymentSuccessSound.muted = false;
+        audioUnlocked = true;
+      }).catch(() => {
+        paymentSuccessSound.muted = false;
+      });
+    }
+  }
 
   let checkoutTotal = 0;
   let finalOrderID  = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
@@ -424,21 +449,21 @@ document.addEventListener('DOMContentLoaded', function () {
       html += '<p style="color:var(--red);font-size:13.5px">Pesanan kosong. Silakan kembali memilih produk di katalog.</p>';
       if (btnConfirm) btnConfirm.disabled = true;
     } else {
-      html += '<div style="max-height:300px;overflow-y:auto;padding-right:4px">';
+      html += '<div style="max-height:260px;overflow-y:auto;padding-right:4px">';
       cart.forEach(item => {
         checkoutTotal += item.totalPrice;
         html += `
-          <div style="padding:12px 0;border-bottom:1px dashed var(--border)">
-            <strong style="font-size:14px;display:block;margin-bottom:3px">${item.product} (x${item.qty})</strong>
-            <span style="font-size:12.5px;color:var(--muted)">Warna: ${item.color} | Ukuran: ${item.size}</span><br>
-            <span style="font-size:14px;color:var(--red);font-weight:700">Rp ${item.totalPrice.toLocaleString('id-ID')}</span>
+          <div style="padding:10px 0;border-bottom:1px dashed var(--border)">
+            <strong style="font-size:13.5px;display:block;margin-bottom:3px">${item.product} (x${item.qty})</strong>
+            <span style="font-size:12px;color:var(--muted)">Warna: ${item.color} | Ukuran: ${item.size}</span><br>
+            <span style="font-size:13.5px;color:var(--red);font-weight:700">Rp ${item.totalPrice.toLocaleString('id-ID')}</span>
           </div>`;
       });
       html += '</div>';
     }
-    html += `<div style="margin-top:16px;padding-top:14px;border-top:2px solid var(--border)">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:4px">Total Tagihan:</p>
-      <h3 style="font-size:1.55rem;color:var(--red);font-weight:900;border:none;padding:0;margin:0">Rp ${checkoutTotal.toLocaleString('id-ID')}</h3>
+    html += `<div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--border)">
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:4px">Total Tagihan:</p>
+      <h3 style="font-size:1.45rem;color:var(--red);font-weight:900;border:none;padding:0;margin:0">Rp ${checkoutTotal.toLocaleString('id-ID')}</h3>
     </div>`;
     summaryEl.innerHTML = html;
   }
@@ -455,6 +480,8 @@ document.addEventListener('DOMContentLoaded', function () {
   if (btnConfirm) {
     btnConfirm.addEventListener('click', function (e) {
       e.preventDefault();
+      unlockAudioSilently(); // Membuka izin audio HP secara hening (0% suara)
+
       const cart = JSON.parse(localStorage.getItem('8urStoryCart')) || [];
       if (cart.length === 0) { showToast('Pesanan kosong! Silakan belanja dulu.', '⚠️'); return; }
 
@@ -516,9 +543,12 @@ document.addEventListener('DOMContentLoaded', function () {
       paymentModal.style.display = 'none';
       setStep(2);
 
+      /* Putar Suara Pembayaran Diterima tepat saat Pop-Up Sukses muncul */
+      paymentSuccessSound.muted = false;
       paymentSuccessSound.currentTime = 0;
-      paymentSuccessSound.play().catch(err => {
-        console.log('Autoplay audio dicegah browser:', err);
+      paymentSuccessSound.play().catch(() => {
+        const backupAudio = new Audio('sound/pembayaran%20diterima.mp3');
+        backupAudio.play().catch(err => console.log('Audio error:', err));
       });
 
       const orderIdEl = document.getElementById('success-order-id');
@@ -532,7 +562,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
-     12. ACCORDION (FAQ & Informasi Produk)
+     9. ACCORDION, FILTER KATALOG, SEARCH & MODAL
   ══════════════════════════════════════ */
   document.querySelectorAll('.faq-item').forEach(item => {
     const q = item.querySelector('.faq-question');
@@ -552,9 +582,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  /* ══════════════════════════════════════
-     13. CATALOG FILTER
-  ══════════════════════════════════════ */
   const filterBtns   = document.querySelectorAll('.filter-btn');
   const productCards = document.querySelectorAll('#product-list .product-card');
   filterBtns.forEach(btn => {
@@ -574,9 +601,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  /* ══════════════════════════════════════
-     14. SEARCH BAR
-  ══════════════════════════════════════ */
   const searchInput = document.querySelector('.search-bar');
   if (searchInput && productCards.length > 0) {
     searchInput.addEventListener('input', function () {
@@ -589,9 +613,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ══════════════════════════════════════
-     15. MODAL CLOSE ON OVERLAY CLICK
-  ══════════════════════════════════════ */
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', e => {
       if (e.target === overlay && overlay.id === 'payment-modal') {
@@ -601,9 +622,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  /* ══════════════════════════════════════
-     16. SMOOTH ANCHOR SCROLLING
-  ══════════════════════════════════════ */
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       const href = a.getAttribute('href');
