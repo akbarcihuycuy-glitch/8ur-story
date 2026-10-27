@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoodie Custom - 8UR STORY</title>
+    <link rel="icon" href="images/logo.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="page-progress"></div>
+
+    <header>
+        <div class="logo-container">
+            <a href="index.html"><img src="images/logo.png" alt="8UR STORY" class="logo"></a>
+        </div>
+        <div class="header-center">
+            <input type="text" class="search-bar" placeholder="Cari desain, produk, atau kategori...">
+        </div>
+        <div class="header-right">
+            <ul class="nav-links">
+                <li><a href="index.html#katalog">Katalog</a></li>
+                <li><a href="index.html#tentang-kami">Tentang Kami</a></li>
+                <li><a href="index.html#cara-order">Cara Order</a></li>
+                <li><a href="index.html#faq">FAQ</a></li>
+            </ul>
+            <a href="cart.html" class="cart-container">🛒 Keranjang<span class="cart-badge" id="cart-count">0</span></a>
+        </div>
+    </header>
+
+    <main class="container product-page reveal">
+        <div class="product-images">
+            <div class="t-shirt-preview">
+                <!-- Badge Indikator Slide & Status Stok -->
+                <span class="preview-stock-badge">👑 Fleece 280gsm</span>
+                <span class="slide-counter" id="slide-counter">1 / 3</span>
+
+                <!-- Tombol Geser Slide Kiri -->
+                <button type="button" class="slider-btn prev-btn" onclick="prevImage()" aria-label="Sebelumnya">&#10094;</button>
+                
+                <img src="images/hoodie-depan.png" alt="Hoodie Premium" class="base-tshirt" id="base-shirt">
+                
+                <!-- Tombol Geser Slide Kanan -->
+                <button type="button" class="slider-btn next-btn" onclick="nextImage()" aria-label="Selanjutnya">&#10095;</button>
+            </div>
+
+            <div class="thumbnail-gallery">
+                <img src="images/hoodie-depan.png" alt="Tampak Depan" class="thumb-item active" onclick="changeImage(0)">
+                <img src="images/hoodie-belakang.png" alt="Tampak Belakang" class="thumb-item" onclick="changeImage(1)">
+                <img src="images/model-hoodie.png" alt="Tampak Model" class="thumb-item" onclick="changeImage(2)">
+            </div>
+        </div>
+
+        <div class="product-info">
+            <div class="product-meta-top">
+                <span class="product-tag-top">👑 OUTERWEAR PREMIUM</span>
+                <span class="product-rating-inline">⭐⭐⭐⭐⭐ <strong>5.0</strong> (95+ Ulasan)</span>
+            </div>
+
+            <h1 id="product-name">Hoodie Premium 8UR STORY</h1>
+            <h2 id="total-price" data-baseprice="135000">Rp 135.000</h2>
+            
+            <p class="description">Bahan Cotton Fleece tebal premium. Nyaman, lembut di dalam, hangat, dan sangat pas untuk disablon custom. Tampil keren di segala cuaca.</p>
+
+            <!-- LINGKARAN WARNA HOODIE -->
+            <div class="form-group">
+                <label>Warna Hoodie: <span id="color-name-display" style="font-weight: 600; color: var(--red); margin-left: 5px;">Putih (Basic)</span></label>
+                <div class="color-swatches" id="color-swatch-container">
+                    <div class="color-swatch active" data-color="Putih (Basic)" data-addon="0" style="background-color: #f8f9fa;" title="Putih"></div>
+                    <div class="color-swatch" data-color="Hitam" data-addon="5000" style="background-color: #1a1a1a;" title="Hitam"></div>
+                    <div class="color-swatch" data-color="Navy" data-addon="5000" style="background-color: #1c2841;" title="Navy"></div>
+                    <div class="color-swatch" data-color="Sage Green" data-addon="5000" style="background-color: #8a9a86;" title="Sage Green"></div>
+                    <div class="color-swatch" data-color="Ash Grey" data-addon="5000" style="background-color: #b2beb5;" title="Ash Grey"></div>
+                </div>
+                <small class="note-text">*Warna selain putih dikenakan biaya tambahan Rp 5.000</small>
+            </div>
+
+            <!-- UKURAN HOODIE (S - XXXL, Selisih +Rp 5.000/size) -->
+            <div class="form-group">
+                <label>Pilih Ukuran Hoodie (Lebar x Panjang):</label>
+                <select id="size-select">
+                    <option value="0">S (50cm x 62cm) — Rp 135.000</option>
+                    <option value="5000">M (52cm x 65cm) — Rp 140.000</option>
+                    <option value="10000">L (55cm x 68cm) — Rp 145.000</option>
+                    <option value="15000">XL (58cm x 71cm) — Rp 150.000</option>
+                    <option value="20000">XXL (61cm x 74cm) — Rp 155.000</option>
+                    <option value="25000">XXXL (64cm x 77cm) — Rp 160.000</option>
+                </select>
+            </div>
+
+            <!-- AREA UPLOAD DESAIN CUSTOM INTERAKTIF -->
+            <div class="form-group">
+                <label>Kirim Desain Custom Anda (Opsional):</label>
+                <div class="custom-file-upload">
+                    <label for="custom-design" class="file-upload-label" id="upload-dropzone">
+                        <span class="upload-icon">🎨</span>
+                        <div class="upload-text-wrap">
+                            <span class="upload-text">Klik untuk Unggah File Desain (PNG / JPG)</span>
+                            <small class="upload-subtext">Resolusi tinggi disarankan • Maks 5MB (Kosongkan jika ingin desain original)</small>
+                        </div>
+                    </label>
+                    <input type="file" id="custom-design" accept="image/*">
+                </div>
+                <div id="upload-preview-container"></div>
+            </div>
+
+            <!-- QUANTITY DENGAN TOMBOL +/- MODERN -->
+            <div class="form-group">
+                <label>Jumlah Pesanan (Quantity):</label>
+                <div class="qty-control-wrapper">
+                    <button type="button" class="qty-btn" onclick="stepQuantity(-1)">−</button>
+                    <input type="number" id="quantity" value="1" min="1">
+                    <button type="button" class="qty-btn" onclick="stepQuantity(1)">+</button>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="add-to-cart" class="btn-primary">🛒 Add to Cart</button>
+                <button id="buy-now" class="btn-secondary">⚡ Bayar Sekarang</button>
+            </div>
+
+            <!-- TRUST BADGES -->
+            <div class="trust-badges">
+                <div class="trust-item">
+                    <span class="icon">🛡️</span>
+                    <span>Garansi 100%</span>
+                    <small>Ganti baru jika cacat</small>
+                </div>
+                <div class="trust-item">
+                    <span class="icon">🚚</span>
+                    <span>Produksi Kilat</span>
+                    <small>Proses 1-3 hari kerja</small>
+                </div>
+                <div class="trust-item">
+                    <span class="icon">🔒</span>
+                    <span>Transaksi Aman</span>
+                    <small>QRIS & Virtual Account</small>
+                </div>
+            </div>
+
+            <!-- ACCORDION INFORMASI PRODUK LENGKAP (3 TAB) -->
+            <div class="product-accordion faq-container">
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>📋 Detail Bahan & Spesifikasi Sablon</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <ul>
+                            <li><strong>Material:</strong> Cotton Fleece Gramasi 280gsm (Tebal, hangat, bagian dalam berbulu lembut).</li>
+                            <li><strong>Sablon:</strong> Direct Transfer Film (DTF) Anti Retak & Tahan Cuci.</li>
+                            <li><strong>Detail:</strong> Kupluk 2 lapis, tali serut tebal, & saku kangguru luas di bagian depan.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>📏 Panduan Ukuran (Size Chart & Harga)</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="size-table-wrap">
+                            <table class="size-chart-table">
+                                <thead>
+                                    <tr><th>Size</th><th>Lebar x Panjang</th><th>Harga Dasar (Putih)</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>S</td><td>50 cm x 62 cm</td><td>Rp 135.000</td></tr>
+                                    <tr><td>M</td><td>52 cm x 65 cm</td><td>Rp 140.000</td></tr>
+                                    <tr><td>L</td><td>55 cm x 68 cm</td><td>Rp 145.000</td></tr>
+                                    <tr><td>XL</td><td>58 cm x 71 cm</td><td>Rp 150.000</td></tr>
+                                    <tr><td>XXL</td><td>61 cm x 74 cm</td><td>Rp 155.000</td></tr>
+                                    <tr><td>XXXL</td><td>64 cm x 77 cm</td><td>Rp 160.000</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>🔄 Kebijakan Garansi & Pengembalian</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Kami menjamin kepuasan Anda 100%. Jika produk yang diterima mengalami cacat jahitan atau salah cetak desain dari pihak kami, kami akan mengirimkan produk pengganti baru tanpa biaya tambahan (wajib menyertakan video unboxing 1x24 jam).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>

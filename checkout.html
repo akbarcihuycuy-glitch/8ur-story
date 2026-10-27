@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — 8UR STORY</title>
+  <link rel="icon" href="images/logo.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="page-progress"></div>
+
+<header>
+  <div class="logo-container">
+    <a href="index.html"><img src="images/logo.png" alt="8UR STORY" class="logo" onerror="this.style.display='none'"></a>
+  </div>
+  <div class="header-right">
+    <ul class="nav-links">
+      <li><a href="index.html#katalog">Katalog</a></li>
+    </ul>
+    <a href="cart.html" class="cart-container">🛒&nbsp;Keranjang <span class="cart-badge" id="cart-count">0</span></a>
+  </div>
+</header>
+
+<main class="checkout-page reveal">
+
+  <!-- ── PROGRESS STEPS ── -->
+  <div style="max-width:520px;margin:0 auto 36px;padding:0 20px">
+    <div class="checkout-steps">
+      <div class="checkout-step-item active">
+        <div class="step-circle">1</div>
+        <div class="step-label">Detail Pengiriman</div>
+      </div>
+      <div class="checkout-step-item">
+        <div class="step-circle">2</div>
+        <div class="step-label">Pembayaran</div>
+      </div>
+      <div class="checkout-step-item">
+        <div class="step-circle">✓</div>
+        <div class="step-label">Selesai</div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title">FORM PENGIRIMAN &amp; PEMBAYARAN</h2>
+  <p class="section-subtitle">Lengkapi detail alamat pengiriman Anda dan pilih metode pembayaran instan di bawah ini.</p>
+
+  <div class="checkout-container">
+
+    <!-- ORDER SUMMARY -->
+    <div class="order-summary" id="order-summary">
+      <h3>Ringkasan Pesanan</h3>
+      <p style="color:var(--muted);font-size:13.5px">Memuat data pesanan...</p>
+    </div>
+
+    <!-- ORDER FORM (Dengan Watermark Logo 8UR STORY & Efek Kaca Buram) -->
+    <div class="order-form">
+
+      <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:20px">📍 Data Pengiriman Penerima</h3>
+
+      <div class="floating-group">
+        <input type="text" id="buyer-name" placeholder=" " required>
+        <label>Nama Lengkap Penerima</label>
+      </div>
+      <div class="floating-group">
+        <input type="tel" id="buyer-phone" placeholder=" " required>
+        <label>Nomor WhatsApp Aktif (Contoh: 08123456789)</label>
+      </div>
+      <div class="floating-group">
+        <textarea id="buyer-address" rows="3" placeholder=" " required></textarea>
+        <label>Alamat Lengkap (Jalan, RT/RW, Kecamatan, Kota)</label>
+      </div>
+
+      <h3 style="font-size:1.05rem;font-weight:700;margin:28px 0 16px">💳 Pilih Metode Pembayaran</h3>
+      <div class="payment-methods">
+        <label class="payment-option">
+          <input type="radio" name="payment" value="QRIS" checked>
+          <div class="pay-content">
+            <span>QRIS (Semua Bank/E-Wallet)</span>
+            <img src="images/QRIS.png" alt="QRIS" onerror="this.style.display='none'">
+          </div>
+        </label>
+        <label class="payment-option">
+          <input type="radio" name="payment" value="BCA">
+          <div class="pay-content">
+            <span>BCA Virtual Account</span>
+            <img src="images/BCA.png" alt="BCA" onerror="this.style.display='none'">
+          </div>
+        </label>
+        <label class="payment-option">
+          <input type="radio" name="payment" value="MANDIRI">
+          <div class="pay-content">
+            <span>Mandiri Virtual Account</span>
+            <!-- Mendukung MANDIR.png maupun MANDIRI.png secara otomatis -->
+            <img src="images/MANDIR.png" alt="Mandiri" onerror="this.onerror=null; this.src='images/MANDIRI.png';">
+          </div>
+        </label>
+        <label class="payment-option">
+          <input type="radio" name="payment" value="BRI">
+          <div class="pay-content">
+            <span>BRI Virtual Account</span>
+            <img src="images/BRI.png" alt="BRI" onerror="this.style.display='none'">
+          </div>
+        </label>
+      </div>
+
+      <button class="btn-primary" id="btn-confirm-order" style="width:100%;padding:16px;font-size:15.5px;margin-top:8px">
+        Bayar Sekarang &rarr;
+      </button>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:14px">
+        🔒 Transaksi aman &amp; terenkripsi. Pesanan Anda diprioritaskan.
+      </p>
+    </div>
+  </div>
+</main>
+
+<!-- POP UP 1: Selesaikan Pembayaran -->
+<div class="modal-overlay" id="payment-modal">
+  <div class="modal-content">
+    <h3 id="modal-bank-name" style="margin-bottom:5px;font-size:1.25rem;font-weight:800">Selesaikan Pembayaran</h3>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:22px">Segera lakukan pembayaran sebelum waktu habis.</p>
+
+    <img id="qr-image" src="" alt="QRIS Code"
+         style="border:2px solid var(--border);padding:10px;border-radius:12px;margin:0 auto;display:none;max-width:200px">
+
+    <div id="rekening-container" style="display:none;flex-direction:column;align-items:center;margin:16px 0">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:8px">Nomor Virtual Account:</p>
+      <div class="payment-code" id="va-code"></div>
+      <p style="font-size:13px;color:var(--muted);margin-top:10px">a.n. <strong>8UR STORY OFFICIAL</strong></p>
+    </div>
+
+    <p id="modal-total-pay" style="font-weight:800;font-size:1.25rem;margin:20px 0;color:var(--red)"></p>
+
+    <div class="form-group" style="text-align:left;margin-bottom:22px">
+      <label style="font-size:13px;font-weight:700;color:var(--dark);display:block;margin-bottom:8px">Upload Bukti Pembayaran:</label>
+      <input type="file" id="payment-proof" accept="image/*" style="border:2px dashed #3498db;background:rgba(235,245,251,0.75);cursor:pointer;padding:14px">
+      <small style="color:var(--muted);font-size:11.5px;margin-top:6px;display:block">Format: JPG, PNG. Maks 5MB.</small>
+    </div>
+
+    <button class="btn-primary" id="btn-submit-payment" style="width:100%;margin-bottom:10px;padding:14px">✅ Saya Sudah Bayar</button>
+    <button class="btn-secondary-dark" id="btn-cancel-payment" style="width:100%">Batal / Tutup</button>
+  </div>
+</div>
+
+<!-- POP UP 2: Pembayaran Diterima (Sukses + Audio) -->
+<div class="modal-overlay" id="success-modal">
+  <div class="modal-content" style="text-align:center;max-width:450px">
+    <div style="font-size:4rem;margin-bottom:14px;animation:fadeInUp .5s ease both">✅</div>
+    <h3 style="color:var(--success);font-size:1.5rem;font-weight:800;margin-bottom:12px">Pembayaran Diterima!</h3>
+    <div style="background:var(--light);padding:16px;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:20px">
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:4px">Nomor Pesanan Anda:</p>
+      <h4 id="success-order-id" style="font-size:1.35rem;color:var(--dark);letter-spacing:1px;font-weight:800"></h4>
+    </div>
+    <p style="color:var(--muted);line-height:1.7;margin-bottom:24px;font-size:14px">
+      Terima kasih telah berbelanja di <strong>8UR STORY</strong>! Bukti pembayaran Anda telah kami terima dan akan segera divalidasi.<br><br>
+      Tim admin kami akan menghubungi Anda via WhatsApp untuk konfirmasi detail pesanan. Produk akan diproses dalam <strong>1-3 hari kerja</strong>.
+    </p>
+    <a href="index.html" class="btn-primary" style="display:inline-flex;width:100%">Kembali ke Beranda</a>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
