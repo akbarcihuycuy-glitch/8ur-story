@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>8UR STORY - Custom T-Shirt & Streetwear</title>
+    <link rel="icon" href="images/logo.png">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- HEADER -->
     <header>
         <div class="logo-container">
             <a href="index.html"><img src="images/logo.png" alt="8UR STORY" class="logo"></a>
@@ -29,7 +29,6 @@
         </div>
     </header>
 
-    <!-- HERO SECTION DENGAN ANIMASI GRADIENT & FADE-IN -->
     <section class="hero-section">
         <div class="hero-content">
             <span class="hero-badge">🔥 PREMIUM CUSTOM APPAREL</span>
@@ -42,18 +41,17 @@
         </div>
     </section>
 
-    <!-- KEUNGGULAN BELANJA (FEATURES BAR) -->
     <section class="features-section container reveal">
         <div class="features-grid">
             <div class="feature-card">
                 <div class="feature-icon">👕</div>
                 <h4>Bahan 100% Premium</h4>
-                <p>Menggunakan Cotton Combed 30s & Cotton Fleece tebal yang adem, lembut, dan menyerap keringat.</p>
+                <p>Menggunakan Cotton Combed & Fleece tebal yang adem, lembut, dan menyerap keringat.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">🎨</div>
-                <h4>Sablon DTF High-Res</h4>
-                <p>Teknologi Direct Transfer Film modern menghasilkan warna tajam, detail presisi, elastis, dan anti luntur.</p>
+                <h4>Sablon & Cetak High-Res</h4>
+                <p>Teknologi DTF & Full Print modern menghasilkan warna tajam, detail presisi, elastis, dan anti luntur.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">⚡</div>
@@ -68,26 +66,25 @@
         </div>
     </section>
 
-    <!-- KATALOG SEMUA PRODUK DENGAN FILTER -->
     <main class="container reveal" id="katalog">
         <h2 class="section-title">Katalog Produk 8UR STORY</h2>
         <p class="section-subtitle">Pilih produk dasar favoritmu, tentukan warna, dan unggah desain kebanggaanmu.</p>
 
+        <!-- PENAMBAHAN TOMBOL FILTER AKSESORIS -->
         <div class="catalog-filters">
             <button class="filter-btn active" data-filter="all">Semua Produk</button>
             <button class="filter-btn" data-filter="kaos">Koleksi Kaos</button>
             <button class="filter-btn" data-filter="outerwear">Koleksi Hoodie</button>
+            <button class="filter-btn" data-filter="aksesoris">Aksesoris & Merchandise</button>
         </div>
 
         <div class="product-grid" id="product-list">
-            <!-- Produk 1: Kaos Lengan Pendek (Mulai Rp 89.000) -->
+            <!-- 1: Kaos Pendek -->
             <a href="product-pendek.html" class="product-card" data-category="kaos" data-name="kaos lengan pendek regular">
                 <span class="product-badge">Terlaris</span>
-                <div class="product-img-wrapper">
-                    <img src="images/pendek-depan.png" alt="Kaos Lengan Pendek">
-                </div>
+                <div class="product-img-wrapper"><img src="images/pendek-depan.png" alt="Kaos Lengan Pendek"></div>
                 <div class="product-card-body">
-                    <span class="product-category">T-Shirt • Cotton Combed 30s</span>
+                    <span class="product-category">T-Shirt • Cotton Combed 24s</span>
                     <h3>Kaos Lengan Pendek</h3>
                     <div class="product-rating">⭐⭐⭐⭐⭐ <span>(4.9)</span></div>
                     <p class="price">Mulai dari Rp 89.000</p>
@@ -95,14 +92,12 @@
                 </div>
             </a>
             
-            <!-- Produk 2: Kaos Lengan Panjang (Mulai Rp 99.000) -->
+            <!-- 2: Kaos Panjang -->
             <a href="product-panjang.html" class="product-card" data-category="kaos" data-name="kaos lengan panjang longsleeve">
                 <span class="product-badge badge-new">Favorit</span>
-                <div class="product-img-wrapper">
-                    <img src="images/panjang-depan.png" alt="Kaos Lengan Panjang">
-                </div>
+                <div class="product-img-wrapper"><img src="images/panjang-depan.png" alt="Kaos Lengan Panjang"></div>
                 <div class="product-card-body">
-                    <span class="product-category">Longsleeve • Cotton Combed 30s</span>
+                    <span class="product-category">Longsleeve • Cotton Combed 24s</span>
                     <h3>Kaos Lengan Panjang</h3>
                     <div class="product-rating">⭐⭐⭐⭐⭐ <span>(4.8)</span></div>
                     <p class="price">Mulai dari Rp 99.000</p>
@@ -110,12 +105,10 @@
                 </div>
             </a>
 
-            <!-- Produk 3: Hoodie (Mulai Rp 135.000) -->
+            <!-- 3: Hoodie -->
             <a href="product-hoodie.html" class="product-card" data-category="outerwear" data-name="hoodie custom premium sweater">
                 <span class="product-badge badge-premium">Premium</span>
-                <div class="product-img-wrapper">
-                    <img src="images/hoodie-depan.png" alt="Hoodie Custom">
-                </div>
+                <div class="product-img-wrapper"><img src="images/hoodie-depan.png" alt="Hoodie Custom"></div>
                 <div class="product-card-body">
                     <span class="product-category">Outerwear • Cotton Fleece Tebal</span>
                     <h3>Hoodie Custom</h3>
@@ -124,10 +117,35 @@
                     <span class="btn-card-action">Pilih & Custom &rarr;</span>
                 </div>
             </a>
+
+            <!-- 4: Topi Baru -->
+            <a href="product-topi.html" class="product-card" data-category="aksesoris" data-name="topi baseball cap">
+                <span class="product-badge badge-new">Baru</span>
+                <div class="product-img-wrapper"><img src="images/topi.png" alt="Topi Custom"></div>
+                <div class="product-card-body">
+                    <span class="product-category">Headwear • Cotton Twill Premium</span>
+                    <h3>Topi Baseball Custom</h3>
+                    <div class="product-rating">⭐⭐⭐⭐⭐ <span>(4.8)</span></div>
+                    <p class="price">Mulai dari Rp 49.000</p>
+                    <span class="btn-card-action">Pilih & Custom &rarr;</span>
+                </div>
+            </a>
+
+            <!-- 5: Bantal Baru -->
+            <a href="product-bantal.html" class="product-card" data-category="aksesoris" data-name="bantal custom sofa kado">
+                <span class="product-badge">Gift Idea</span>
+                <div class="product-img-wrapper"><img src="images/bantal-1.png" alt="Bantal Custom"></div>
+                <div class="product-card-body">
+                    <span class="product-category">Merchandise • Velboa Halus</span>
+                    <h3>Bantal Full Print Custom</h3>
+                    <div class="product-rating">⭐⭐⭐⭐⭐ <span>(5.0)</span></div>
+                    <p class="price">Mulai dari Rp 45.000</p>
+                    <span class="btn-card-action">Pilih & Custom &rarr;</span>
+                </div>
+            </a>
         </div>
     </main>
 
-    <!-- TENTANG KAMI (FILOSOFI BRAND TANPA NAMA KELOMPOK) -->
     <section class="about-section reveal" id="tentang-kami">
         <div class="container about-container">
             <div class="about-image">
@@ -137,7 +155,7 @@
                 <span class="sub-heading">FILOSOFI BRAND KAMI</span>
                 <h2>Pakaian adalah Kanvas, Kamu adalah Ceritanya</h2>
                 <p>Identitas visual dan nama <strong>8UR STORY</strong> lahir dari inspirasi kultur pop ikonik <em>Toy Story</em>—sebuah simbol abadi tentang imajinasi yang hidup, kebahagiaan masa muda, dan ikatan persahabatan yang tak lekang oleh waktu. Kami mentransformasikan kata <em>'Toy'</em> menjadi <strong>'8UR'</strong>, di mana angka <strong>8</strong> melambangkan simbol <em>infinity</em> (kreativitas tanpa batas) yang berpadu dengan <em>"Our/Your Story"</em>.</p>
-                <p>Bagi kami, setiap helai pakaian memiliki ceritanya sendiri. Memadukan bahan <em>Cotton Combed 30s</em> berpotongan <em>regular fit</em> yang nyaman dipakai generasi kreatif muda, 8UR STORY hadir sebagai ruang berekspresi agar kamu bisa mengenakan karya dan cerita kebanggaanmu setiap hari.</p>
+                <p>Bagi kami, setiap helai pakaian memiliki ceritanya sendiri. Memadukan standar kualitas distro premium, bahan sejuk di kulit, serta teknologi sablon yang tajam, kami hadir sebagai ruang berekspresi agar kamu bisa mengenakan karya dan cerita kebanggaanmu setiap hari.</p>
                 <div class="about-stats">
                     <div class="stat-item">
                         <h3>1.500+</h3>
@@ -156,7 +174,6 @@
         </div>
     </section>
 
-    <!-- CARA ORDER (HOW TO ORDER) -->
     <section class="steps-section container reveal" id="cara-order">
         <h2 class="section-title">4 Langkah Mudah Pesan Custom</h2>
         <p class="section-subtitle">Proses pemesanan praktis tanpa ribet, langsung dari layar perangkatmu.</p>
@@ -164,7 +181,7 @@
             <div class="step-card">
                 <div class="step-number">1</div>
                 <h4>Pilih Produk & Warna</h4>
-                <p>Pilih model pakaian (Kaos Pendek, Panjang, atau Hoodie), lalu klik bulatan warna dan ukuran yang sesuai.</p>
+                <p>Pilih produk favoritmu (Kaos, Hoodie, Topi, Bantal), lalu klik bulatan warna dan ukuran yang sesuai.</p>
             </div>
             <div class="step-card">
                 <div class="step-number">2</div>
@@ -184,7 +201,6 @@
         </div>
     </section>
 
-    <!-- TESTIMONI PELANGGAN (UTUH) -->
     <section class="testimonials-section reveal">
         <div class="container">
             <h2 class="section-title">Apa Kata Mereka?</h2>
@@ -214,12 +230,12 @@
                 </div>
                 <div class="testimonial-card">
                     <div class="stars">⭐⭐⭐⭐⭐</div>
-                    <p class="review-text">"Suka banget sama pilihan warna kaosnya, terutama yang Sage Green. Cuttingannya pas di badan dan rib lengan panjangnya rapi gak gampang melar."</p>
+                    <p class="review-text">"Bantal custom-nya lucu banget! Fotonya kecetak full color dan sarungnya halus banget dipeluk. Recommended buat kado."</p>
                     <div class="reviewer">
-                        <div class="avatar">D</div>
+                        <div class="avatar">A</div>
                         <div>
-                            <h5>Dimas Anggara</h5>
-                            <span>Pembeli Kaos Lengan Panjang (Sage Green)</span>
+                            <h5>Amelia Sari</h5>
+                            <span>Pembeli Bantal Custom 40x40</span>
                         </div>
                     </div>
                 </div>
@@ -227,76 +243,41 @@
         </div>
     </section>
 
-    <!-- FAQ (PERTANYAAN UMUM INTERAKTIF LENGKAP 5 ITEM) -->
     <section class="faq-section container reveal" id="faq">
         <h2 class="section-title">Pertanyaan Umum (FAQ)</h2>
         <p class="section-subtitle">Temukan jawaban cepat untuk pertanyaan yang paling sering diajukan pembeli.</p>
         
         <div class="faq-container">
             <div class="faq-item">
-                <button class="faq-question">
-                    <span>Apakah bisa pesan kaos custom satuan (1 pcs saja)?</span>
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>Tentu bisa! Di 8UR STORY tidak ada batas minimum pemesanan. Anda bisa memesan mulai dari 1 pcs untuk kebutuhan pribadi maupun puluhan pcs untuk komunitas.</p>
-                </div>
+                <button class="faq-question"><span>Apakah bisa pesan custom satuan (1 pcs saja)?</span><span class="faq-icon">+</span></button>
+                <div class="faq-answer"><p>Tentu bisa! Di 8UR STORY tidak ada batas minimum pemesanan. Anda bisa memesan mulai dari 1 pcs untuk kebutuhan pribadi maupun puluhan pcs untuk komunitas.</p></div>
             </div>
-
             <div class="faq-item">
-                <button class="faq-question">
-                    <span>Format file apa yang terbaik untuk upload desain custom?</span>
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>Kami sangat menyarankan file berformat <strong>PNG tanpa latar belakang (transparan)</strong> dengan resolusi tinggi agar hasil cetak sablon DTF terlihat rapi, tajam, dan tidak memiliki kotak background putih.</p>
-                </div>
+                <button class="faq-question"><span>Format file apa yang terbaik untuk upload desain custom?</span><span class="faq-icon">+</span></button>
+                <div class="faq-answer"><p>Kami sangat menyarankan file berformat <strong>PNG tanpa latar belakang (transparan)</strong> dengan resolusi tinggi agar hasil cetak terlihat rapi, tajam, dan tidak memiliki kotak background putih.</p></div>
             </div>
-
             <div class="faq-item">
-                <button class="faq-question">
-                    <span>Bagaimana rincian penyesuaian harga berdasarkan ukuran dan warna?</span>
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>Untuk kaos berwarna selain putih dikenakan tambahan +Rp 5.000 karena membutuhkan lapisan tinta putih dasar (underbase). Sedangkan setiap kenaikan ukuran (S ke M, L, XL, XXL, hingga XXXL) menyesuaikan kebutuhan dimensi kain (+Rp 3.000/size untuk Kaos dan +Rp 5.000/size untuk Hoodie).</p>
-                </div>
+                <button class="faq-question"><span>Bagaimana rincian penyesuaian harga berdasarkan ukuran dan warna?</span><span class="faq-icon">+</span></button>
+                <div class="faq-answer"><p>Untuk kaos berwarna selain putih dikenakan tambahan +Rp 5.000 karena membutuhkan lapisan tinta putih dasar (underbase). Sedangkan setiap kenaikan ukuran akan otomatis menyesuaikan harga dasar produk (bisa dilihat di pilihan menu ukuran).</p></div>
             </div>
-
             <div class="faq-item">
-                <button class="faq-question">
-                    <span>Berapa lama waktu pengerjaan pesanan saya?</span>
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>Setelah bukti pembayaran Anda tervalidasi, pesanan akan langsung masuk ke antrean produksi dan diselesaikan dalam waktu <strong>1 hingga 3 hari kerja</strong> sebelum diserahkan ke pihak ekspedisi pengiriman.</p>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <button class="faq-question">
-                    <span>Bagaimana cara merawat kaos agar sablonnya awet bertahun-tahun?</span>
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>Sangat mudah! Balik kaos (bagian dalam di luar) saat mencuci dan menjemur, hindari penggunaan pemutih pakaian, dan jangan menyetrika secara langsung di atas permukaan sablon.</p>
-                </div>
+                <button class="faq-question"><span>Berapa lama waktu pengerjaan pesanan saya?</span><span class="faq-icon">+</span></button>
+                <div class="faq-answer"><p>Setelah bukti pembayaran Anda tervalidasi, pesanan akan langsung masuk ke antrean produksi dan diselesaikan dalam waktu <strong>1 hingga 3 hari kerja</strong> sebelum diserahkan ke pihak ekspedisi pengiriman.</p></div>
             </div>
         </div>
     </section>
 
-    <!-- FOOTER PROFESIONAL LENGKAP -->
     <footer class="site-footer">
         <div class="container footer-grid">
             <div class="footer-col">
                 <img src="images/logo.png" alt="8UR STORY" style="height: 45px; margin-bottom: 15px;">
-                <p>Platform pakaian custom berkualitas distro. Ekspresikan gaya dan ceritamu melalui desain pakaian yang unik setiap hari.</p>
+                <p>Platform pakaian custom berkualitas premium. Ekspresikan gaya dan ceritamu tanpa batas setiap harinya.</p>
             </div>
             <div class="footer-col">
                 <h4>Navigasi Cepat</h4>
                 <ul>
                     <li><a href="#katalog">Katalog Produk</a></li>
-                    <li><a href="#tentang-kami">Tentang 8UR STORY</a></li>
+                    <li><a href="#tentang-kami">Tentang Kami</a></li>
                     <li><a href="#cara-order">Cara Pemesanan</a></li>
                     <li><a href="#faq">FAQ / Bantuan</a></li>
                 </ul>
@@ -316,7 +297,6 @@
             <p>&copy; 2026 8UR STORY Official. All Rights Reserved.</p>
         </div>
     </footer>
-
     <script src="script.js"></script>
 </body>
 </html>
