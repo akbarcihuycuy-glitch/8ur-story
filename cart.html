@@ -2,30 +2,40 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <!-- Baris wajib agar tampilan Keranjang pas di layar HP dan tidak kecil seperti Laptop -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keranjang - 8UR STORY</title>
+    <link rel="icon" href="images/logo.png">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- (Paste Header Baru di sini) -->
+    <div id="page-progress"></div>
+
     <header>
         <div class="logo-container">
             <a href="index.html"><img src="images/logo.png" alt="8UR STORY" class="logo"></a>
         </div>
         <div class="header-right">
+            <ul class="nav-links">
+                <li><a href="index.html#katalog">Katalog</a></li>
+                <li><a href="index.html#tentang-kami">Tentang Kami</a></li>
+                <li><a href="index.html#cara-order">Cara Order</a></li>
+                <li><a href="index.html#faq">FAQ</a></li>
+            </ul>
             <a href="cart.html" class="cart-container">
                 🛒 Keranjang <span class="cart-badge" id="cart-count">0</span>
             </a>
         </div>
     </header>
 
-    <main class="container cart-page">
+    <main class="cart-page reveal">
         <h2>Keranjang Belanja Anda</h2>
         <div id="cart-items-container">
             <!-- Item keranjang akan dimunculkan oleh JavaScript di sini -->
         </div>
-        <div style="text-align: right; margin-top: 30px;">
-            <h3 id="cart-total" style="font-size: 24px; color: #e74c3c; margin-bottom: 15px;">Total: Rp 0</h3>
-            <button class="btn-primary" id="btn-checkout" style="width: 250px;">Lanjut ke Checkout</button>
+        <div style="text-align: right; margin-top: 24px;">
+            <h3 id="cart-total" style="font-size: 20px; color: var(--red); margin-bottom: 14px;">Total: Rp 0</h3>
+            <button class="btn-primary" id="btn-checkout" style="width: 100%; max-width: 260px;">Lanjut ke Checkout &rarr;</button>
         </div>
     </main>
 
