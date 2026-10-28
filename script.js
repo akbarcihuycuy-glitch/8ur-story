@@ -1,6 +1,6 @@
 /* ============================================================
-   8UR STORY — script.js  v2.4 FINAL
-   (Mobile Menu + Audio Fix + 12 Testimoni Marquee + 1 Min Timer)
+   8UR STORY — script.js  v2.8 FINAL
+   (Custom SVG CS Icon + Agen LISA + Auto-Hide di Cart/Checkout)
    ============================================================ */
 'use strict';
 
@@ -75,7 +75,6 @@ document.addEventListener('DOMContentLoaded', function () {
   ══════════════════════════════════════ */
   const testimonialsTrack = document.getElementById('testimonials-track');
   if (testimonialsTrack && !testimonialsTrack.dataset.cloned) {
-    // Gandakan kartu testimoni secara otomatis agar geseran menyambung mulus tanpa jeda kosong
     testimonialsTrack.innerHTML += testimonialsTrack.innerHTML;
     testimonialsTrack.dataset.cloned = 'true';
   }
@@ -427,7 +426,6 @@ document.addEventListener('DOMContentLoaded', function () {
   let paymentTimerInterval = null;
   let remainingSeconds     = 60;
 
-  /* Audio Pembayaran Diterima (.MP3 & .mp3 fallback) */
   const paymentSuccessSound = new Audio();
   paymentSuccessSound.preload = 'auto';
   paymentSuccessSound.src = 'sound/pembayaran%20diterima.MP3';
@@ -454,7 +452,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  /* Nada Peringatan Halus Saat Waktu Habis (Web Audio API) */
   function playTimeoutTone() {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -521,7 +518,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function startPaymentTimer() {
     stopPaymentTimer();
-    remainingSeconds = 60; // 1 Menit (60 Detik)
+    remainingSeconds = 60;
     if (countdownBox) countdownBox.classList.remove('danger');
     if (timerDisplay) timerDisplay.textContent = '01:00';
 
@@ -531,12 +528,10 @@ document.addEventListener('DOMContentLoaded', function () {
       const secs = String(remainingSeconds % 60).padStart(2, '0');
       if (timerDisplay) timerDisplay.textContent = `${mins}:${secs}`;
 
-      // Berkedip merah saat sisa <= 15 detik
       if (remainingSeconds <= 15 && countdownBox) {
         countdownBox.classList.add('danger');
       }
 
-      // Jika waktu habis (00:00) dan belum upload/bayar
       if (remainingSeconds <= 0) {
         stopPaymentTimer();
         if (paymentModal) paymentModal.style.display = 'none';
@@ -576,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (failedModal) failedModal.style.display = 'none';
     if (paymentModal) paymentModal.style.display = 'flex';
-    startPaymentTimer(); // Mulai hitungan mundur 1 menit
+    startPaymentTimer();
   }
 
   if (btnConfirm) {
@@ -603,7 +598,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* Tombol Batal / Tutup di Pop-Up Pembayaran */
   if (btnCancelPay) {
     btnCancelPay.addEventListener('click', function () {
       stopPaymentTimer();
@@ -612,7 +606,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* Tombol Ulangi Pembayaran di Pop-Up Gagal */
   if (btnRetryPay) {
     btnRetryPay.addEventListener('click', function () {
       unlockAudioSilently();
@@ -622,7 +615,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* Tombol Kembali ke Form di Pop-Up Gagal */
   if (btnCloseFailed) {
     btnCloseFailed.addEventListener('click', function () {
       stopPaymentTimer();
@@ -631,7 +623,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* Tombol Saya Sudah Bayar */
   if (btnSubmitPay) {
     btnSubmitPay.addEventListener('click', function () {
       const proof = document.getElementById('payment-proof');
@@ -640,7 +631,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      stopPaymentTimer(); // Hentikan timer karena pembayaran berhasil tepat waktu
+      stopPaymentTimer();
       paymentModal.style.display = 'none';
       setStep(2);
 
@@ -739,5 +730,578 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
+
+  /* ════════════════════════════════════════════════════════════════
+     10. SMART FLOATING CS (AGEN LISA + IKON VEKTOR CS GOOGLE)
+         Hanya Muncul di Beranda & Detail Produk
+  ════════════════════════════════════════════════════════════════ */
+  const isCheckoutOrCartPage =
+    document.querySelector('.checkout-page') !== null ||
+    document.querySelector('.cart-page') !== null ||
+    window.location.pathname.toLowerCase().includes('checkout') ||
+    window.location.pathname.toLowerCase().includes('cart');
+
+  if (!isCheckoutOrCartPage && !document.getElementById('cs-widget-root')) {
+
+    /* SVG Ikon Customer Service (Sesuai Referensi Gambar Google) */
+    const csVectorIconSVG = `
+      <svg viewBox="0 0 100 100" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Lingkaran Dasar Putih Halus -->
+        <circle cx="50" cy="50" r="47" fill="#FFFFFF"/>
+        <!-- Busur Lingkaran Panah Kiri Atas -->
+        <path d="M 16 48 A 35 35 0 0 1 60 15" stroke="#111827" stroke-width="5.5" stroke-linecap="round"/>
+        <path d="M 10 41 L 16 50 L 23 42" stroke="#111827" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Busur Lingkaran Kanan Bawah -->
+        <path d="M 83 38 A 35 35 0 0 1 48 85" stroke="#111827" stroke-width="5.5" stroke-linecap="round"/>
+        <!-- Rambut Cokelat Agen Wanita -->
+        <path d="M 33 42 C 33 23, 67 23, 67 42 L 66 57 L 34 57 Z" fill="#6D4C41" stroke="#111827" stroke-width="4.5" stroke-linejoin="round"/>
+        <!-- Baju & Jas Abu-Biru -->
+        <path d="M 28 76 C 28 62, 39 58, 50 58 C 61 58, 72 62, 72 76 Z" fill="#4B5563" stroke="#111827" stroke-width="4.5" stroke-linejoin="round"/>
+        <path d="M 43 58 L 50 73 L 57 58 Z" fill="#E5E7EB" stroke="#111827" stroke-width="3.5" stroke-linejoin="round"/>
+        <!-- Leher & Wajah Krem -->
+        <rect x="45" y="50" width="10" height="10" rx="3" fill="#FCD3B6" stroke="#111827" stroke-width="4"/>
+        <path d="M 37 39 C 37 28, 63 28, 63 39 C 63 50, 56 55, 50 55 C 44 55, 37 50, 37 39 Z" fill="#FCD3B6" stroke="#111827" stroke-width="4.5"/>
+        <!-- Headset & Mikrofon -->
+        <path d="M 34 39 A 16 16 0 0 1 66 39" stroke="#111827" stroke-width="5" stroke-linecap="round"/>
+        <rect x="30" y="36" width="7" height="13" rx="3.5" fill="#374151" stroke="#111827" stroke-width="4"/>
+        <rect x="63" y="36" width="7" height="13" rx="3.5" fill="#374151" stroke="#111827" stroke-width="4"/>
+        <path d="M 65 47 Q 65 52 52 52" stroke="#111827" stroke-width="4.5" stroke-linecap="round"/>
+        <rect x="46" y="49.5" width="8" height="4.5" rx="2.2" fill="#111827"/>
+        <!-- Balon Chat Pink di Kanan Atas -->
+        <rect x="62" y="7" width="30" height="21" rx="5" fill="#FF6B81" stroke="#111827" stroke-width="4.5"/>
+        <path d="M 68 28 L 65 35 L 75 28" fill="#FF6B81" stroke="#111827" stroke-width="4.5" stroke-linejoin="round"/>
+        <line x1="68" y1="14" x2="85" y2="14" stroke="#111827" stroke-width="3.8" stroke-linecap="round"/>
+        <line x1="68" y1="21" x2="80" y2="21" stroke="#111827" stroke-width="3.8" stroke-linecap="round"/>
+        <!-- Gagang Telepon Pink di Kiri Bawah -->
+        <path d="M 18 59 C 14 66, 25 83, 36 84 L 40 77 L 33 72 L 30 75 C 25 73, 23 69, 25 65 L 28 62 L 22 56 Z" fill="#FF6B81" stroke="#111827" stroke-width="4.5" stroke-linejoin="round"/>
+      </svg>
+    `;
+
+    if (!document.getElementById('cs-injected-styles')) {
+      const styleTag = document.createElement('style');
+      styleTag.id = 'cs-injected-styles';
+      styleTag.textContent = `
+        #cs-widget-root {
+          position: fixed !important;
+          bottom: 24px !important;
+          right: 24px !important;
+          z-index: 9995 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: flex-end !important;
+          font-family: 'Poppins', sans-serif !important;
+          pointer-events: none !important;
+        }
+        #cs-widget-root * { box-sizing: border-box; }
+        .cs-greeting-bubble {
+          pointer-events: auto !important;
+          background: #FFFFFF !important;
+          color: #111827 !important;
+          padding: 12px 34px 12px 16px !important;
+          border-radius: 16px 16px 4px 16px !important;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.16) !important;
+          border: 1.5px solid #FECACA !important;
+          font-size: 12.5px !important;
+          font-weight: 600 !important;
+          line-height: 1.45 !important;
+          max-width: 260px !important;
+          margin-bottom: 12px !important;
+          position: relative !important;
+          cursor: pointer !important;
+          animation: csFloatAnim 3s ease-in-out infinite !important;
+          transition: all 0.25s ease !important;
+        }
+        .cs-greeting-bubble:hover { border-color: #E83124 !important; transform: translateY(-2px) !important; }
+        .cs-greeting-bubble strong { color: #E83124 !important; }
+        .cs-bubble-close {
+          position: absolute !important;
+          top: 6px !important; right: 8px !important;
+          width: 20px !important; height: 20px !important;
+          border-radius: 50% !important; border: none !important;
+          background: #F3F4F6 !important; color: #6B7280 !important;
+          font-size: 13px !important; line-height: 1 !important;
+          cursor: pointer !important; display: flex !important;
+          align-items: center !important; justify-content: center !important;
+        }
+        .cs-bubble-close:hover { background: #E83124 !important; color: #FFF !important; }
+        @keyframes csFloatAnim {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+        .cs-Launcher-btn {
+          pointer-events: auto !important;
+          display: flex !important; align-items: center !important; gap: 11px !important;
+          background: linear-gradient(135deg, #E83124, #C0281E) !important;
+          color: #FFFFFF !important; border: none !important;
+          padding: 9px 22px 9px 10px !important; border-radius: 50px !important;
+          font-family: 'Poppins', sans-serif !important;
+          font-size: 13px !important; font-weight: 800 !important;
+          letter-spacing: 0.6px !important; cursor: pointer !important;
+          box-shadow: 0 8px 25px rgba(232, 49, 36, 0.42) !important;
+          position: relative !important; transition: all 0.3s ease !important;
+          animation: csPulseAnim 2.4s infinite !important;
+        }
+        .cs-Launcher-btn:hover { transform: translateY(-3px) scale(1.03) !important; }
+        .cs-launcher-icon {
+          width: 38px !important; height: 38px !important;
+          background: #FFFFFF !important;
+          border-radius: 50% !important; display: flex !important;
+          align-items: center !important; justify-content: center !important;
+          padding: 2px !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.18) !important;
+          flex-shrink: 0 !important;
+        }
+        .cs-online-dot {
+          width: 12px !important; height: 12px !important;
+          background: #10B981 !important; border: 2px solid #FFFFFF !important;
+          border-radius: 50% !important; position: absolute !important;
+          top: 0px !important; right: 6px !important;
+        }
+        @keyframes csPulseAnim {
+          0%   { box-shadow: 0 0 0 0 rgba(232, 49, 36, 0.55), 0 8px 25px rgba(232, 49, 36, 0.35); }
+          70%  { box-shadow: 0 0 0 14px rgba(232, 49, 36, 0), 0 8px 25px rgba(232, 49, 36, 0.35); }
+          100% { box-shadow: 0 0 0 0 rgba(232, 49, 36, 0), 0 8px 25px rgba(232, 49, 36, 0.35); }
+        }
+        .cs-chat-window {
+          pointer-events: none !important;
+          width: 370px !important; max-width: calc(100vw - 28px) !important;
+          height: 520px !important; max-height: calc(100vh - 110px) !important;
+          background: #FFFFFF !important; border-radius: 20px !important;
+          box-shadow: 0 20px 60px rgba(17, 24, 39, 0.26) !important;
+          border: 1px solid #E5E7EB !important;
+          display: none !important; flex-direction: column !important;
+          overflow: hidden !important; margin-bottom: 14px !important;
+          transform-origin: bottom right !important;
+        }
+        .cs-chat-window.open {
+          display: flex !important;
+          pointer-events: auto !important;
+          animation: csWindowOpen 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+        }
+        @keyframes csWindowOpen {
+          from { opacity: 0; transform: translateY(20px) scale(0.94); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .cs-chat-header {
+          background: linear-gradient(135deg, #111827, #1F2937) !important;
+          color: #FFFFFF !important; padding: 15px 18px !important;
+          display: flex !important; align-items: center !important;
+          justify-content: space-between !important;
+          border-bottom: 3px solid #E83124 !important;
+        }
+        .cs-agent-info { display: flex !important; align-items: center !important; gap: 12px !important; }
+        .cs-agent-avatar {
+          width: 44px !important; height: 44px !important;
+          border-radius: 50% !important;
+          background: #FFFFFF !important;
+          padding: 2px !important;
+          display: flex !important; align-items: center !important;
+          justify-content: center !important;
+          position: relative !important; flex-shrink: 0 !important;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.25) !important;
+        }
+        .cs-agent-text h4 { font-size: 14.5px !important; font-weight: 800 !important; color: #FFFFFF !important; margin: 0 0 2px 0 !important; }
+        .cs-agent-text span { font-size: 11px !important; color: #A7F3D0 !important; font-weight: 500 !important; }
+        .cs-close-chat {
+          background: rgba(255,255,255,0.12) !important; border: none !important;
+          color: #FFFFFF !important; width: 32px !important; height: 32px !important;
+          border-radius: 50% !important; font-size: 15px !important;
+          cursor: pointer !important; display: flex !important;
+          align-items: center !important; justify-content: center !important;
+        }
+        .cs-close-chat:hover { background: #E83124 !important; }
+        .cs-chat-body {
+          flex: 1 !important; padding: 15px !important;
+          overflow-y: auto !important; background: #F8FAFC !important;
+          display: flex !important; flex-direction: column !important; gap: 12px !important;
+        }
+        .cs-msg-row { display: flex !important; flex-direction: column !important; max-width: 86% !important; }
+        .cs-msg-row.agent { align-self: flex-start !important; }
+        .cs-msg-row.user  { align-self: flex-end !important; }
+        .cs-msg-bubble {
+          padding: 11px 14px !important; border-radius: 14px !important;
+          font-size: 12.8px !important; line-height: 1.55 !important;
+          text-align: left !important; word-wrap: break-word !important;
+        }
+        .cs-msg-row.agent .cs-msg-bubble {
+          background: #FFFFFF !important; color: #111827 !important;
+          border: 1px solid #E5E7EB !important; border-top-left-radius: 4px !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
+        }
+        .cs-msg-row.user .cs-msg-bubble {
+          background: #E83124 !important; color: #FFFFFF !important;
+          border-bottom-right-radius: 4px !important;
+        }
+        .cs-msg-time { font-size: 10px !important; color: #6B7280 !important; margin-top: 4px !important; padding: 0 4px !important; }
+        .cs-msg-row.user .cs-msg-time { text-align: right !important; }
+        .cs-product-link-card {
+          display: flex !important; align-items: center !important;
+          justify-content: space-between !important; gap: 8px !important;
+          margin-top: 8px !important; padding: 9px 12px !important;
+          background: #FEF2F2 !important; border: 1.5px solid #FECACA !important;
+          border-radius: 10px !important; color: #111827 !important;
+          text-decoration: none !important; font-size: 12px !important;
+          font-weight: 700 !important; transition: all 0.2s ease !important;
+        }
+        .cs-product-link-card:hover {
+          background: #E83124 !important; color: #FFFFFF !important; border-color: #E83124 !important;
+        }
+        .cs-product-link-card span.price-tag { color: #E83124 !important; font-weight: 800 !important; font-size: 11.5px !important; }
+        .cs-product-link-card:hover span.price-tag { color: #FFFFFF !important; }
+        .cs-typing {
+          display: inline-flex !important; align-items: center !important; gap: 4px !important;
+          padding: 10px 14px !important; background: #FFFFFF !important;
+          border: 1px solid #E5E7EB !important; border-radius: 14px !important;
+        }
+        .cs-typing span {
+          width: 6px !important; height: 6px !important; background: #6B7280 !important;
+          border-radius: 50% !important; animation: csDotBlink 1.2s infinite !important;
+        }
+        .cs-typing span:nth-child(2) { animation-delay: 0.2s !important; }
+        .cs-typing span:nth-child(3) { animation-delay: 0.4s !important; }
+        @keyframes csDotBlink {
+          0%, 100% { opacity: 0.3; transform: translateY(0); }
+          50% { opacity: 1; transform: translateY(-3px); }
+        }
+        .cs-quick-chips {
+          display: flex !important; gap: 6px !important; padding: 8px 12px !important;
+          background: #F8FAFC !important; border-top: 1px solid #EEF2F6 !important;
+          overflow-x: auto !important; scrollbar-width: none !important;
+        }
+        .cs-quick-chips::-webkit-scrollbar { display: none !important; }
+        .cs-chip-btn {
+          background: #FFFFFF !important; border: 1px solid #D1D5DB !important;
+          color: #111827 !important; padding: 6px 12px !important;
+          border-radius: 50px !important; font-family: 'Poppins', sans-serif !important;
+          font-size: 11.5px !important; font-weight: 600 !important;
+          white-space: nowrap !important; cursor: pointer !important; flex-shrink: 0 !important;
+        }
+        .cs-chip-btn:hover { border-color: #E83124 !important; background: #FEF2F2 !important; color: #E83124 !important; }
+        .cs-chat-input-area {
+          display: flex !important; align-items: center !important; gap: 8px !important;
+          padding: 10px 12px !important; background: #FFFFFF !important;
+          border-top: 1px solid #E5E7EB !important;
+        }
+        .cs-chat-input-area input {
+          flex: 1 !important; border: 1.5px solid #E5E7EB !important;
+          border-radius: 50px !important; padding: 9px 15px !important;
+          font-size: 12.5px !important; outline: none !important; background: #F9FAFB !important;
+        }
+        .cs-chat-input-area input:focus { border-color: #E83124 !important; background: #FFFFFF !important; }
+        .cs-send-btn {
+          width: 38px !important; height: 38px !important; border-radius: 50% !important;
+          border: none !important; background: #E83124 !important; color: #FFFFFF !important;
+          font-size: 15px !important; cursor: pointer !important;
+          display: flex !important; align-items: center !important; justify-content: center !important;
+          flex-shrink: 0 !important;
+        }
+        .cs-send-btn:hover { background: #C0281E !important; }
+        @media (max-width: 768px) {
+          #cs-widget-root { bottom: 16px !important; right: 14px !important; }
+          .cs-Launcher-btn { padding: 8px 16px 8px 8px !important; font-size: 11.5px !important; }
+          .cs-launcher-icon { width: 34px !important; height: 34px !important; }
+          .cs-greeting-bubble { font-size: 11.5px !important; max-width: 225px !important; padding: 10px 28px 10px 12px !important; }
+          .cs-chat-window { width: calc(100vw - 28px) !important; height: 70vh !important; }
+        }
+      `;
+      document.head.appendChild(styleTag);
+    }
+
+    const csWidget = document.createElement('div');
+    csWidget.id = 'cs-widget-root';
+    csWidget.className = 'cs-widget-wrapper';
+    csWidget.innerHTML = `
+      <!-- Jendela Chat Pop-Up -->
+      <div class="cs-chat-window" id="cs-chat-window">
+        <div class="cs-chat-header">
+          <div class="cs-agent-info">
+            <div class="cs-agent-avatar">${csVectorIconSVG}</div>
+            <div class="cs-agent-text">
+              <h4>LISA — Customer Service</h4>
+              <span>● Online • Siap Membantu Anda</span>
+            </div>
+          </div>
+          <button type="button" class="cs-close-chat" id="cs-close-chat" aria-label="Tutup Chat">✕</button>
+        </div>
+
+        <div class="cs-chat-body" id="cs-chat-body"></div>
+
+        <!-- Opsi Cepat (Quick Replies) -->
+        <div class="cs-quick-chips">
+          <button type="button" class="cs-chip-btn" data-query="Bingung pilih ukuran?">📏 Cek Ukuran (BB/TB)</button>
+          <button type="button" class="cs-chip-btn" data-query="Rekomendasi produk terbaik">🔥 Rekomendasi Produk</button>
+          <button type="button" class="cs-chip-btn" data-query="Setelah selesai bayar harus ngapain?">💳 Info Setelah Bayar</button>
+          <button type="button" class="cs-chip-btn" data-query="Berapa lama proses & pengiriman?">🚚 Proses & Pengiriman</button>
+          <button type="button" class="cs-chip-btn" data-query="Apakah ada garansi jika cacat?">🛡️ Garansi 100%</button>
+        </div>
+
+        <!-- Kolom Ketik Bebas -->
+        <form class="cs-chat-input-area" id="cs-chat-form">
+          <input type="text" id="cs-chat-input" placeholder="Ketik tinggi/berat badan atau pertanyaanmu..." autocomplete="off">
+          <button type="submit" class="cs-send-btn" aria-label="Kirim">➤</button>
+        </form>
+      </div>
+
+      <!-- Gelembung Sapaan Otomatis -->
+      <div class="cs-greeting-bubble" id="cs-greeting-bubble">
+        <button type="button" class="cs-bubble-close" id="cs-bubble-close" aria-label="Tutup sapaan">×</button>
+        👋 Halo Kak! Bingung pilih ukuran atau butuh rekomendasi? <strong>Chat LISA (CS) yuk!</strong>
+      </div>
+
+      <!-- Tombol Utama CUSTOMER SERVICE -->
+      <button type="button" class="cs-Launcher-btn" id="cs-launcher-btn">
+        <span class="cs-online-dot"></span>
+        <span class="cs-launcher-icon">${csVectorIconSVG}</span>
+        <span>CUSTOMER SERVICE</span>
+      </button>
+    `;
+    document.body.appendChild(csWidget);
+
+    const chatWindow   = document.getElementById('cs-chat-window');
+    const launcherBtn  = document.getElementById('cs-launcher-btn');
+    const closeChatBtn = document.getElementById('cs-close-chat');
+    const greetBubble  = document.getElementById('cs-greeting-bubble');
+    const closeBubble  = document.getElementById('cs-bubble-close');
+    const chatBody     = document.getElementById('cs-chat-body');
+    const chatForm     = document.getElementById('cs-chat-form');
+    const chatInput    = document.getElementById('cs-chat-input');
+
+    function getTimeStr() {
+      const d = new Date();
+      return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    }
+
+    function appendMessage(sender, htmlText) {
+      const row = document.createElement('div');
+      row.className = `cs-msg-row ${sender}`;
+      row.innerHTML = `
+        <div class="cs-msg-bubble">${htmlText}</div>
+        <div class="cs-msg-time">${sender === 'agent' ? 'LISA (CS) • ' : ''}${getTimeStr()}</div>
+      `;
+      chatBody.appendChild(row);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    appendMessage('agent', `
+      Halo Kak! 👋 Kenalin aku <strong>LISA</strong> dari tim Customer Service <strong>8UR STORY</strong>.<br><br>
+      Kakak bisa klik menu cepat di bawah, atau <strong>ketik langsung berat & tinggi badan Kakak</strong> (contoh: <em>"BB 65 kg tinggi 170 cm"</em>) biar LISA hitungkan ukuran yang paling pas! 😊
+    `);
+
+    function toggleChat(forceOpen = null) {
+      const willOpen = forceOpen !== null ? forceOpen : !chatWindow.classList.contains('open');
+      chatWindow.classList.toggle('open', willOpen);
+      if (willOpen && greetBubble) {
+        greetBubble.style.display = 'none';
+        setTimeout(() => chatInput?.focus(), 200);
+      }
+    }
+
+    launcherBtn.addEventListener('click', () => toggleChat());
+    closeChatBtn.addEventListener('click', () => toggleChat(false));
+    greetBubble.addEventListener('click', (e) => {
+      if (e.target !== closeBubble) toggleChat(true);
+    });
+    closeBubble.addEventListener('click', (e) => {
+      e.stopPropagation();
+      greetBubble.style.display = 'none';
+    });
+
+    function generateSmartCSReply(rawText) {
+      const text = rawText.toLowerCase();
+
+      const numbers = rawText.match(/\d{2,3}/g);
+      let weight = null;
+      let height = null;
+
+      const bbMatch = text.match(/(?:bb|berat|badan)\s*[:=]?\s*(\d{2,3})/i) || text.match(/(\d{2,3})\s*kg/i);
+      const tbMatch = text.match(/(?:tb|tinggi)\s*[:=]?\s*(\d{3})/i) || text.match(/(\d{3})\s*cm/i);
+
+      if (bbMatch) weight = parseInt(bbMatch[1]);
+      if (tbMatch) height = parseInt(tbMatch[1]);
+
+      if (!weight && !height && numbers && numbers.length >= 2) {
+        const n1 = parseInt(numbers[0]);
+        const n2 = parseInt(numbers[1]);
+        if (n1 >= 140 && n2 < 140) { height = n1; weight = n2; }
+        else if (n2 >= 140 && n1 < 140) { weight = n1; height = n2; }
+      } else if (!weight && !height && numbers && numbers.length === 1) {
+        const n = parseInt(numbers[0]);
+        if (n >= 35 && n <= 130 && (text.includes('size') || text.includes('ukuran') || text.includes('muat') || text.includes('bb') || text.includes('berat'))) {
+          weight = n;
+        } else if (n >= 145 && n <= 200 && (text.includes('size') || text.includes('ukuran') || text.includes('tb') || text.includes('tinggi'))) {
+          height = n;
+        }
+      }
+
+      if (weight || height) {
+        let recSize = 'L';
+        let kaosDims = '50 cm x 72 cm';
+        let kaosPrice = 'Rp 95.000';
+        let hoodiePrice = 'Rp 145.000';
+
+        const w = weight || (height ? height - 105 : 62);
+        const h = height || 168;
+
+        if (w <= 52 && h <= 164) {
+          recSize = 'S'; kaosDims = '46 cm x 68 cm'; kaosPrice = 'Rp 89.000'; hoodiePrice = 'Rp 135.000';
+        } else if (w <= 62 && h <= 170) {
+          recSize = 'M'; kaosDims = '48 cm x 70 cm'; kaosPrice = 'Rp 92.000'; hoodiePrice = 'Rp 140.000';
+        } else if (w <= 72 && h <= 176) {
+          recSize = 'L'; kaosDims = '50 cm x 72 cm'; kaosPrice = 'Rp 95.000'; hoodiePrice = 'Rp 145.000';
+        } else if (w <= 82 && h <= 182) {
+          recSize = 'XL'; kaosDims = '52 cm x 74 cm'; kaosPrice = 'Rp 98.000'; hoodiePrice = 'Rp 150.000';
+        } else if (w <= 92) {
+          recSize = 'XXL'; kaosDims = '54 cm x 76 cm'; kaosPrice = 'Rp 101.000'; hoodiePrice = 'Rp 155.000';
+        } else {
+          recSize = 'XXXL'; kaosDims = '56 cm x 78 cm'; kaosPrice = 'Rp 104.000'; hoodiePrice = 'Rp 160.000';
+        }
+
+        const infoBody = `${weight ? `berat <strong>${weight} kg</strong>` : ''}${weight && height ? ' dan ' : ''}${height ? `tinggi <strong>${height} cm</strong>` : ''}`;
+
+        return `
+          Untuk postur Kakak (${infoBody}), LISA sangat merekomendasikan ukuran <strong>Size ${recSize}</strong> (${kaosDims}) supaya jatuhnya pas dan nyaman di badan! ✨<br><br>
+          💡 <em>Tips LISA:</em> Kalau Kakak suka gaya agak longgar (<em>oversize look</em>), Kakak bisa naik 1 ukuran ya.<br><br>
+          Silakan klik produk yang Kakak incar di bawah ini untuk langsung pilih <strong>Size ${recSize}</strong>:
+          <a href="product-pendek.html" class="cs-product-link-card">
+            <span>👕 Kaos Lengan Pendek (Size ${recSize})</span>
+            <span class="price-tag">${kaosPrice} &rarr;</span>
+          </a>
+          <a href="product-hoodie.html" class="cs-product-link-card">
+            <span>👑 Hoodie Premium (Size ${recSize})</span>
+            <span class="price-tag">${hoodiePrice} &rarr;</span>
+          </a>
+        `;
+      }
+
+      if (text.includes('ukuran') || text.includes('size') || text.includes('chart') || text.includes('melar') || text.includes('sempit')) {
+        return `
+          Boleh banget Kak! Biar LISA bantu hitungkan ukuran paling akurat (S sampai XXXL), <strong>berapa perkiraan Berat Badan (kg) dan Tinggi Badan (cm) Kakak?</strong> 😊<br><br>
+          Ketik aja langsung misalnya: <em>"Berat 60 tinggi 168"</em> ya Kak!
+        `;
+      }
+
+      if (text.includes('selesai bayar') || text.includes('sudah bayar') || text.includes('habis bayar') || text.includes('ngapain') || text.includes('bukti') || text.includes('proses') || text.includes('kirim') || text.includes('berapa lama')) {
+        return `
+          Tenang Kak, proses di <strong>8UR STORY</strong> super jelas dan aman! 🔒<br><br>
+          <strong>Alur Setelah Kakak Klik Bayar:</strong><br>
+          1️⃣ Muncul QRIS / Nomor Virtual Account beserta batas waktu <strong>1 menit</strong> untuk unggah foto bukti transfer.<br>
+          2️⃣ Setelah klik <strong>"Saya Sudah Bayar"</strong>, sistem otomatis menerbitkan <strong>Nomor Pesanan (ORD-xxxxxx)</strong>.<br>
+          3️⃣ Tim Admin kami akan menghubungi WhatsApp Kakak untuk konfirmasi pratinjau desain & resi pengiriman.<br>
+          4️⃣ Pesanan diproduksi kilat <strong>1–3 hari kerja</strong> dengan Quality Control ketat!<br><br>
+          Yuk mulai pilih produk favorit Kakak:
+          <a href="index.html#katalog" class="cs-product-link-card">
+            <span>🛍️ Lihat Katalog Lengkap</span>
+            <span class="price-tag">Mulai Rp 45rb &rarr;</span>
+          </a>
+        `;
+      }
+
+      if (text.includes('rekomendasi') || text.includes('bagus') || text.includes('bingung') || text.includes('kado') || text.includes('hadiah') || text.includes('laris') || text.includes('produk')) {
+        return `
+          Ini dia <strong>Top Produk Paling Favorit</strong> rekomendasi LISA di 8UR STORY yang wajib Kakak coba: 🔥
+          <a href="product-pendek.html" class="cs-product-link-card">
+            <span>👕 Kaos Lengan Pendek (Best Seller)</span>
+            <span class="price-tag">Rp 89.000 &rarr;</span>
+          </a>
+          <a href="product-hoodie.html" class="cs-product-link-card">
+            <span>👑 Hoodie Fleece 280gsm Tebal</span>
+            <span class="price-tag">Rp 135.000 &rarr;</span>
+          </a>
+          <a href="product-bantal.html" class="cs-product-link-card">
+            <span>🛋️ Bantal Full Print (Favorit Kado)</span>
+            <span class="price-tag">Rp 45.000 &rarr;</span>
+          </a>
+          <a href="product-topi.html" class="cs-product-link-card">
+            <span>🧢 Topi Baseball Custom</span>
+            <span class="price-tag">Rp 49.000 &rarr;</span>
+          </a>
+        `;
+      }
+
+      if (text.includes('topi')) {
+        return `
+          Untuk <strong>Topi Baseball Custom</strong> kami memakai bahan <em>Cotton Twill Premium</em> yang kokoh dengan pengait besi belakang (All Size). Bisa cetak DTF (Rp 49.000) atau <strong>Upgrade Bordir Timbul 3D</strong> (+Rp 10.000)! 🧢
+          <a href="product-topi.html" class="cs-product-link-card">
+            <span>🧢 Custom Topi Sekarang</span>
+            <span class="price-tag">Rp 49.000 &rarr;</span>
+          </a>
+        `;
+      }
+      if (text.includes('bantal')) {
+        return `
+          <strong>Bantal Custom 8UR STORY</strong> menggunakan kain <em>Velboa/Satin Halus</em> dengan isian 100% Dakron Silikon Grade A yang super empuk & ada resletingnya! Bisa beli sarungnya saja (Rp 45.000) atau lengkap dengan isi bantal (Rp 65.000). 🛋️
+          <a href="product-bantal.html" class="cs-product-link-card">
+            <span>🛋️ Custom Bantal Foto/Desain</span>
+            <span class="price-tag">Mulai Rp 45.000 &rarr;</span>
+          </a>
+        `;
+      }
+      if (text.includes('panjang') || text.includes('longsleeve')) {
+        return `
+          <strong>Kaos Lengan Panjang</strong> kami menggunakan 100% Cotton Combed 24s dengan karet <em>rib</em> di pergelangan tangan yang gak gampang melar. Cocok banget buat gaya streetwear! ✨
+          <a href="product-panjang.html" class="cs-product-link-card">
+            <span>✨ Lihat Kaos Lengan Panjang</span>
+            <span class="price-tag">Rp 99.000 &rarr;</span>
+          </a>
+        `;
+      }
+
+      if (text.includes('garansi') || text.includes('cacat') || text.includes('retur') || text.includes('aman') || text.includes('percaya') || text.includes('bahan') || text.includes('luntur')) {
+        return `
+          Kakak gak perlu ragu sedikit pun! 🛡️ Di <strong>8UR STORY</strong> berlaku <strong>Garansi Kepuasan 100%</strong>:<br><br>
+          ✔️ Bahan 100% <strong>Cotton Combed 24s</strong> & <strong>Cotton Fleece 280gsm</strong> asli standar distro.<br>
+          ✔️ Sablon <strong>DTF High-Resolution</strong> anti retak & tahan cuci mesin.<br>
+          ✔️ <strong>Jaminan Ganti Baru Gratis</strong> jika ada cacat jahitan atau salah cetak dari tim kami!<br><br>
+          Sudah lebih dari <strong>1.500+ pelanggan puas</strong> berbelanja di sini Kak 😊
+        `;
+      }
+
+      return `
+        Terima kasih sudah menghubungi LISA Kak! 😊<br><br>
+        Biar LISA bisa bantu lebih cepat, Kakak bisa:<br>
+        • Ketik <strong>Berat & Tinggi Badan</strong> (contoh: <em>"BB 60 TB 168"</em>) untuk cek ukuran otomatis.<br>
+        • Pilih produk langsung di bawah ini untuk mulai custom desain:
+        <a href="product-pendek.html" class="cs-product-link-card">
+          <span>👕 Kaos Lengan Pendek Custom</span>
+          <span class="price-tag">Rp 89.000 &rarr;</span>
+        </a>
+        <a href="product-hoodie.html" class="cs-product-link-card">
+          <span>👑 Hoodie Custom Premium</span>
+          <span class="price-tag">Rp 135.000 &rarr;</span>
+        </a>
+      `;
+    }
+
+    function handleUserSendMessage(userText) {
+      if (!userText || !userText.trim()) return;
+      appendMessage('user', userText.trim());
+
+      const typingRow = document.createElement('div');
+      typingRow.className = 'cs-msg-row agent';
+      typingRow.innerHTML = `<div class="cs-typing"><span></span><span></span><span></span></div>`;
+      chatBody.appendChild(typingRow);
+      chatBody.scrollTop = chatBody.scrollHeight;
+
+      setTimeout(() => {
+        typingRow.remove();
+        const replyHTML = generateSmartCSReply(userText);
+        appendMessage('agent', replyHTML);
+      }, 600);
+    }
+
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = chatInput.value;
+      chatInput.value = '';
+      handleUserSendMessage(val);
+    });
+
+    csWidget.querySelectorAll('.cs-chip-btn').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const query = chip.getAttribute('data-query');
+        handleUserSendMessage(query);
+      });
+    });
+  }
 
 });
