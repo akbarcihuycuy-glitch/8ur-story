@@ -1,6 +1,6 @@
 /* ============================================================
-   8UR STORY — script.js  v2.8 FINAL
-   (Custom SVG CS Icon + Agen LISA + Auto-Hide di Cart/Checkout)
+   8UR STORY — script.js  v2.9 FINAL
+   (Smart Conversational LISA CS + Anti-Troll Size + Waji Trigger)
    ============================================================ */
 'use strict';
 
@@ -732,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   /* ════════════════════════════════════════════════════════════════
-     10. SMART FLOATING CS (AGEN LISA + IKON VEKTOR CS GOOGLE)
+     10. SMART FLOATING CS (AGEN LISA + OTAK CONVERSATIONAL CERDAS)
          Hanya Muncul di Beranda & Detail Produk
   ════════════════════════════════════════════════════════════════ */
   const isCheckoutOrCartPage =
@@ -746,33 +746,24 @@ document.addEventListener('DOMContentLoaded', function () {
     /* SVG Ikon Customer Service (Sesuai Referensi Gambar Google) */
     const csVectorIconSVG = `
       <svg viewBox="0 0 100 100" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Lingkaran Dasar Putih Halus -->
         <circle cx="50" cy="50" r="47" fill="#FFFFFF"/>
-        <!-- Busur Lingkaran Panah Kiri Atas -->
         <path d="M 16 48 A 35 35 0 0 1 60 15" stroke="#111827" stroke-width="5.5" stroke-linecap="round"/>
         <path d="M 10 41 L 16 50 L 23 42" stroke="#111827" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- Busur Lingkaran Kanan Bawah -->
         <path d="M 83 38 A 35 35 0 0 1 48 85" stroke="#111827" stroke-width="5.5" stroke-linecap="round"/>
-        <!-- Rambut Cokelat Agen Wanita -->
         <path d="M 33 42 C 33 23, 67 23, 67 42 L 66 57 L 34 57 Z" fill="#6D4C41" stroke="#111827" stroke-width="4.5" stroke-linejoin="round"/>
-        <!-- Baju & Jas Abu-Biru -->
         <path d="M 28 76 C 28 62, 39 58, 50 58 C 61 58, 72 62, 72 76 Z" fill="#4B5563" stroke="#111827" stroke-width="4.5" stroke-linejoin="round"/>
         <path d="M 43 58 L 50 73 L 57 58 Z" fill="#E5E7EB" stroke="#111827" stroke-width="3.5" stroke-linejoin="round"/>
-        <!-- Leher & Wajah Krem -->
         <rect x="45" y="50" width="10" height="10" rx="3" fill="#FCD3B6" stroke="#111827" stroke-width="4"/>
         <path d="M 37 39 C 37 28, 63 28, 63 39 C 63 50, 56 55, 50 55 C 44 55, 37 50, 37 39 Z" fill="#FCD3B6" stroke="#111827" stroke-width="4.5"/>
-        <!-- Headset & Mikrofon -->
         <path d="M 34 39 A 16 16 0 0 1 66 39" stroke="#111827" stroke-width="5" stroke-linecap="round"/>
         <rect x="30" y="36" width="7" height="13" rx="3.5" fill="#374151" stroke="#111827" stroke-width="4"/>
         <rect x="63" y="36" width="7" height="13" rx="3.5" fill="#374151" stroke="#111827" stroke-width="4"/>
         <path d="M 65 47 Q 65 52 52 52" stroke="#111827" stroke-width="4.5" stroke-linecap="round"/>
         <rect x="46" y="49.5" width="8" height="4.5" rx="2.2" fill="#111827"/>
-        <!-- Balon Chat Pink di Kanan Atas -->
         <rect x="62" y="7" width="30" height="21" rx="5" fill="#FF6B81" stroke="#111827" stroke-width="4.5"/>
         <path d="M 68 28 L 65 35 L 75 28" fill="#FF6B81" stroke="#111827" stroke-width="4.5" stroke-linejoin="round"/>
         <line x1="68" y1="14" x2="85" y2="14" stroke="#111827" stroke-width="3.8" stroke-linecap="round"/>
         <line x1="68" y1="21" x2="80" y2="21" stroke="#111827" stroke-width="3.8" stroke-linecap="round"/>
-        <!-- Gagang Telepon Pink di Kiri Bawah -->
         <path d="M 18 59 C 14 66, 25 83, 36 84 L 40 77 L 33 72 L 30 75 C 25 73, 23 69, 25 65 L 28 62 L 22 56 Z" fill="#FF6B81" stroke="#111827" stroke-width="4.5" stroke-linejoin="round"/>
       </svg>
     `;
@@ -1066,6 +1057,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const chatForm     = document.getElementById('cs-chat-form');
     const chatInput    = document.getElementById('cs-chat-input');
 
+    let fallbackTurnIndex = 0;
+
     function getTimeStr() {
       const d = new Date();
       return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
@@ -1106,15 +1099,34 @@ document.addEventListener('DOMContentLoaded', function () {
       greetBubble.style.display = 'none';
     });
 
+    /* ════════════════════════════════════════════════════════════════
+       OTAK AI LISA v2.9:
+       1. Trigger Marah/Ngamuk jika ada kata "waji" (Waji / waji / WAJI)
+       2. Detektor Anti-Troll untuk Berat/Tinggi Badan tidak masuk akal
+       3. Kalkulator Ukuran Akurat + Link Produk
+       4. Respons Kontekstual Pertanyaan Iseng & Sarkas Halus + Sopan
+    ════════════════════════════════════════════════════════════════ */
     function generateSmartCSReply(rawText) {
-      const text = rawText.toLowerCase();
+      const cleanRaw = rawText.trim();
+      const text     = cleanRaw.toLowerCase();
 
-      const numbers = rawText.match(/\d{2,3}/g);
+      /* 1. TRIGGER KHUSUS KATA KUNCI "WAJI" (RESPON MARAH / NGAMUK) */
+      if (/waji/i.test(cleanRaw)) {
+        const angryReplies = [
+          `Mending lu diam, gausah ngetik... tololl!! 🤬 Datang-datang bukannya belanja malah nyebut-nyebut itu, minggir lu sana! 💢`,
+          `Heh!! Mending lu diam, gausah banyak ngetik... tololl! 🤬 Kalau cuma mau ngatain atau cari gara-gara mending keluar dari toko gue sekarang juga! 💢`,
+          `Gausah kurang ajar ya lu! Mending lu diam, gausah ngetik... tololl!! 🤬 Kesabaran LISA ada batasnya buat orang iseng kayak lu! 💢`
+        ];
+        return angryReplies[Math.floor(Math.random() * angryReplies.length)];
+      }
+
+      /* 2. DETEKSI ANGKA BERAT BADAN (KG) & TINGGI BADAN (CM) + FILTER ANTI-TROLL */
+      const numbers = cleanRaw.match(/\d{1,4}/g);
       let weight = null;
       let height = null;
 
-      const bbMatch = text.match(/(?:bb|berat|badan)\s*[:=]?\s*(\d{2,3})/i) || text.match(/(\d{2,3})\s*kg/i);
-      const tbMatch = text.match(/(?:tb|tinggi)\s*[:=]?\s*(\d{3})/i) || text.match(/(\d{3})\s*cm/i);
+      const bbMatch = text.match(/(?:bb|berat|badan)\s*[:=]?\s*(\d{1,4})/i) || text.match(/(\d{1,4})\s*kg/i);
+      const tbMatch = text.match(/(?:tb|tinggi)\s*[:=]?\s*(\d{1,4})/i) || text.match(/(\d{1,4})\s*cm/i);
 
       if (bbMatch) weight = parseInt(bbMatch[1]);
       if (tbMatch) height = parseInt(tbMatch[1]);
@@ -1122,18 +1134,42 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!weight && !height && numbers && numbers.length >= 2) {
         const n1 = parseInt(numbers[0]);
         const n2 = parseInt(numbers[1]);
-        if (n1 >= 140 && n2 < 140) { height = n1; weight = n2; }
-        else if (n2 >= 140 && n1 < 140) { weight = n1; height = n2; }
+        if (n1 >= 135 && n2 < 135) { height = n1; weight = n2; }
+        else if (n2 >= 135 && n1 < 135) { weight = n1; height = n2; }
+        else if (text.includes('berat') || text.includes('tinggi') || text.includes('bb') || text.includes('tb') || text.includes('ambil') || text.includes('size') || text.includes('ukuran')) {
+          weight = Math.min(n1, n2);
+          height = Math.max(n1, n2);
+        }
       } else if (!weight && !height && numbers && numbers.length === 1) {
         const n = parseInt(numbers[0]);
-        if (n >= 35 && n <= 130 && (text.includes('size') || text.includes('ukuran') || text.includes('muat') || text.includes('bb') || text.includes('berat'))) {
-          weight = n;
-        } else if (n >= 145 && n <= 200 && (text.includes('size') || text.includes('ukuran') || text.includes('tb') || text.includes('tinggi'))) {
-          height = n;
+        if (text.includes('size') || text.includes('ukuran') || text.includes('muat') || text.includes('bb') || text.includes('berat') || text.includes('tb') || text.includes('tinggi')) {
+          if (n < 135) weight = n;
+          else height = n;
         }
       }
 
-      if (weight || height) {
+      if (weight !== null || height !== null) {
+        /* Cek jika angka tidak masuk akal / pembeli iseng (Anti-Troll) */
+        if ((weight !== null && weight > 130) || (height !== null && height > 205)) {
+          return `
+            Busett ${weight ? `berat <strong>${weight} kg</strong>` : ''} ${height ? `tinggi <strong>${height} cm</strong>` : ''}?! 😱🗿<br><br>
+            Kakak ini manusia apa Titan/Raksasa Kak? 😂 Jangan iseng ngetes LISA dong! Ukuran terbesar kita (<strong>Size XXXL</strong> — 56x78 cm) cuma muat sampai berat maksimal <strong>115 kg</strong> dan tinggi <strong>195 cm</strong> aja.<br><br>
+            Kalau mau buat ukuran sebesar itu harus jahit terpal tenda dulu nih 😅. Yuk ketik berat & tinggi badan Kakak yang asli biar LISA hitungkan beneran!
+          `;
+        }
+
+        if ((weight !== null && weight < 30) || (height !== null && height < 125)) {
+          return `
+            Waduh ${weight ? `berat <strong>${weight} kg</strong>` : ''} ${height ? `tinggi <strong>${height} cm</strong>` : ''}? 😅 Itu ukuran buat adik bayi atau kucing kesayangan Kak? 🐱<br><br>
+            Kaos 8UR STORY potongannya dewasa/remaja mulai dari <strong>Size S (46x68 cm)</strong> untuk berat minimal 38 kg ke atas. Kalau mau buat kado yang pasti muat untuk semua umur, LISA sarankan <strong>Bantal Custom</strong> atau <strong>Topi Baseball</strong> aja yuk:
+            <a href="product-bantal.html" class="cs-product-link-card">
+              <span>🛋️ Bantal Custom Full Print</span>
+              <span class="price-tag">Mulai Rp 45.000 &rarr;</span>
+            </a>
+          `;
+        }
+
+        /* Jika angka realistis (Normal 30–130 kg & 125–205 cm) */
         let recSize = 'L';
         let kaosDims = '50 cm x 72 cm';
         let kaosPrice = 'Rp 95.000';
@@ -1150,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', function () {
           recSize = 'L'; kaosDims = '50 cm x 72 cm'; kaosPrice = 'Rp 95.000'; hoodiePrice = 'Rp 145.000';
         } else if (w <= 82 && h <= 182) {
           recSize = 'XL'; kaosDims = '52 cm x 74 cm'; kaosPrice = 'Rp 98.000'; hoodiePrice = 'Rp 150.000';
-        } else if (w <= 92) {
+        } else if (w <= 95) {
           recSize = 'XXL'; kaosDims = '54 cm x 76 cm'; kaosPrice = 'Rp 101.000'; hoodiePrice = 'Rp 155.000';
         } else {
           recSize = 'XXXL'; kaosDims = '56 cm x 78 cm'; kaosPrice = 'Rp 104.000'; hoodiePrice = 'Rp 160.000';
@@ -1173,6 +1209,71 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
+      /* 3. PERTANYAAN TENTANG KEMAJUAN TOKO / BISNIS (Seperti di Screenshot) */
+      if (text.includes('kemajuan') || text.includes('maju') || text.includes('bangkrut') || text.includes('laku') || text.includes('masa depan') || text.includes('sukses')) {
+        return `
+          Wah jelas bakal maju pesat dong Kak! 🚀 Buktinya sekarang aja udah lebih dari <strong>1.500+ produk terjual</strong> dan katalog kita makin lengkap dari Kaos, Hoodie, Topi, sampai Bantal Custom!<br><br>
+          Biar toko kita makin maju lagi, yuk Kakak ikut nyumbang 1 pesanan hari ini hehe 😎👇
+          <a href="product-pendek.html" class="cs-product-link-card">
+            <span>🔥 Ikut Order Kaos Terlaris</span>
+            <span class="price-tag">Rp 89.000 &rarr;</span>
+          </a>
+        `;
+      }
+
+      /* 4. PERTANYAAN ISENG: JODOH / PACAR / CINTA / BUCIN */
+      if (text.includes('pacar') || text.includes('jomblo') || text.includes('nikah') || text.includes('jodoh') || text.includes('sayang') || text.includes('cinta') || text.includes('cantik')) {
+        return `
+          Waduhh Kak, LISA di sini tugasnya bantu carikan ukuran kaos, bukan biro jodoh 😅🗿.<br><br>
+          Tapi percaya deh, kalau Kakak pakai <strong>Hoodie atau Kaos Custom 8UR STORY</strong>, aura ganteng/cantiknya langsung naik 100% dan gebetan pasti auto naksir! Cobain dulu yuk:
+          <a href="product-hoodie.html" class="cs-product-link-card">
+            <span>👑 Hoodie Custom Biar Makin Keren</span>
+            <span class="price-tag">Rp 135.000 &rarr;</span>
+          </a>
+        `;
+      }
+
+      /* 5. PERTANYAAN ISENG: MAKAN / LAPAR / KOPI / NGANTUK */
+      if (text.includes('makan') || text.includes('lapar') || text.includes('laper') || text.includes('haus') || text.includes('kopi') || text.includes('ngantuk') || text.includes('tidur')) {
+        return `
+          Haha kalau lapar itu buka aplikasi ojek makanan Kak, masa masuk ke toko baju 8UR STORY 🗿😂.<br><br>
+          Tapi kalau ngantuk pengen tidur nyenyak, kita punya <strong>Bantal Custom Dakron Silikon</strong> yang super empuk buat dipeluk nih Kak!
+          <a href="product-bantal.html" class="cs-product-link-card">
+            <span>🛋️ Bantal Empuk 8UR STORY</span>
+            <span class="price-tag">Mulai Rp 45.000 &rarr;</span>
+          </a>
+        `;
+      }
+
+      /* 6. PERTANYAAN TAWAR HARGA / MINTA DISKON / GRATIS / MAHAL */
+      if (text.includes('diskon') || text.includes('nego') || text.includes('kurangin') || text.includes('mahal') || text.includes('gratis') || text.includes('murah')) {
+        return `
+          Waduh Kak, harga di <strong>8UR STORY</strong> (mulai Rp 45rb–89rb) itu udah paling ramah di kantong buat kelas bahan <strong>Cotton Combed 24s & Sablon DTF Premium</strong> lho! 😊<br><br>
+          Kalau mau paling hemat, Kakak bisa cek koleksi Topi atau Bantal Custom kita yang mulai Rp 45 ribuan aja:
+          <a href="product-topi.html" class="cs-product-link-card">
+            <span>🧢 Topi Baseball Custom</span>
+            <span class="price-tag">Rp 49.000 &rarr;</span>
+          </a>
+        `;
+      }
+
+      /* 7. TANYA IDENTITAS LISA (SIAPA KAMU / BOT / AI) */
+      if (text.includes('siapa') || text.includes('bot') || text.includes('robot') || text.includes('manusia') || text.includes('asli')) {
+        return `
+          Aku <strong>LISA</strong> Kak, Customer Service & Stylist resmi di <strong>8UR STORY</strong>! 👩‍💼✨<br><br>
+          Tugas LISA nemenin Kakak 24 jam biar gak salah pilih ukuran, warna, atau bahan sebelum checkout. Kakak lagi ngincar produk yang mana nih?
+        `;
+      }
+
+      /* 8. SAPAAN SINGKAT (HALO / P / PING / PAGI / MALAM) */
+      if (/^(halo|hai|hi|p|ping|tes|test|assalamualaikum|pagi|siang|sore|malam)$/i.test(cleanRaw)) {
+        return `
+          Halo juga Kak! 👋 Senang banget Kakak mampir ke <strong>8UR STORY</strong>.<br><br>
+          Lagi cari kaos custom buat dipakai sendiri, seragam komunitas, atau buat kado nih Kak? Kalau bingung ukuran, sebutin aja berat & tinggi badan Kakak ya! 😊
+        `;
+      }
+
+      /* 9. TANYA UKURAN UMUM (BELUM SEBUT ANGKA) */
       if (text.includes('ukuran') || text.includes('size') || text.includes('chart') || text.includes('melar') || text.includes('sempit')) {
         return `
           Boleh banget Kak! Biar LISA bantu hitungkan ukuran paling akurat (S sampai XXXL), <strong>berapa perkiraan Berat Badan (kg) dan Tinggi Badan (cm) Kakak?</strong> 😊<br><br>
@@ -1180,6 +1281,7 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
+      /* 10. TANYA ALUR SELESAI BAYAR / PENGIRIMAN */
       if (text.includes('selesai bayar') || text.includes('sudah bayar') || text.includes('habis bayar') || text.includes('ngapain') || text.includes('bukti') || text.includes('proses') || text.includes('kirim') || text.includes('berapa lama')) {
         return `
           Tenang Kak, proses di <strong>8UR STORY</strong> super jelas dan aman! 🔒<br><br>
@@ -1196,6 +1298,7 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
+      /* 11. TANYA REKOMENDASI PRODUK */
       if (text.includes('rekomendasi') || text.includes('bagus') || text.includes('bingung') || text.includes('kado') || text.includes('hadiah') || text.includes('laris') || text.includes('produk')) {
         return `
           Ini dia <strong>Top Produk Paling Favorit</strong> rekomendasi LISA di 8UR STORY yang wajib Kakak coba: 🔥
@@ -1218,6 +1321,7 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
+      /* 12. TANYA SPESIFIKASI PRODUK SPESIFIK */
       if (text.includes('topi')) {
         return `
           Untuk <strong>Topi Baseball Custom</strong> kami memakai bahan <em>Cotton Twill Premium</em> yang kokoh dengan pengait besi belakang (All Size). Bisa cetak DTF (Rp 49.000) atau <strong>Upgrade Bordir Timbul 3D</strong> (+Rp 10.000)! 🧢
@@ -1246,6 +1350,7 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
+      /* 13. TANYA GARANSI / BAHAN */
       if (text.includes('garansi') || text.includes('cacat') || text.includes('retur') || text.includes('aman') || text.includes('percaya') || text.includes('bahan') || text.includes('luntur')) {
         return `
           Kakak gak perlu ragu sedikit pun! 🛡️ Di <strong>8UR STORY</strong> berlaku <strong>Garansi Kepuasan 100%</strong>:<br><br>
@@ -1256,20 +1361,24 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      return `
-        Terima kasih sudah menghubungi LISA Kak! 😊<br><br>
-        Biar LISA bisa bantu lebih cepat, Kakak bisa:<br>
-        • Ketik <strong>Berat & Tinggi Badan</strong> (contoh: <em>"BB 60 TB 168"</em>) untuk cek ukuran otomatis.<br>
-        • Pilih produk langsung di bawah ini untuk mulai custom desain:
+      /* 14. JAWABAN OUT-OF-TOPIC (KOMBINASI OPSI B SARKAS HALUS & OPSI A SOPAN MENGARAHKAN) */
+      const outOfTopicReplies = [
+        `Waduh, pertanyaan Kakak tentang <em>"${cleanRaw}"</em> agak di luar nurul nih buat LISA 🗿😅.<br><br>Maaf ya Kak, LISA cuma asisten toko yang jago urusan <em>streetwear</em> & sablon custom. Mending kita ngomongin kaos atau hoodie impian Kakak yuk, lagi cari ukuran apa nih?
         <a href="product-pendek.html" class="cs-product-link-card">
-          <span>👕 Kaos Lengan Pendek Custom</span>
+          <span>👕 Cek Kaos Lengan Pendek</span>
           <span class="price-tag">Rp 89.000 &rarr;</span>
-        </a>
+        </a>`,
+        `Haha Kakak bisa aja ngetes LISA pakai bahasan <em>"${cleanRaw}"</em> 😂🗿.<br><br>Daripada bahas yang bikin LISA pusing, mending Kakak sebutin <strong>Berat & Tinggi Badan</strong> Kakak di sini biar LISA carikan ukuran Hoodie atau Kaos yang paling kece buat Kakak! ✨
         <a href="product-hoodie.html" class="cs-product-link-card">
-          <span>👑 Hoodie Custom Premium</span>
+          <span>👑 Lihat Hoodie Custom Premium</span>
           <span class="price-tag">Rp 135.000 &rarr;</span>
-        </a>
-      `;
+        </a>`,
+        `Hmm jujurly kalau soal <em>"${cleanRaw}"</em> LISA angkat tangan Kak 🏳️😅. Fokus LISA cuma bikin penampilan Kakak makin keren pakai produk <strong>8UR STORY</strong>!<br><br>Ada yang bisa LISA bantu untuk pilih warna kaos, ukuran, atau cara upload desain customnya Kak?`
+      ];
+
+      const chosenReply = outOfTopicReplies[fallbackTurnIndex % outOfTopicReplies.length];
+      fallbackTurnIndex++;
+      return chosenReply;
     }
 
     function handleUserSendMessage(userText) {
