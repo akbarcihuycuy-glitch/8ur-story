@@ -1,5 +1,5 @@
 /* ============================================================
-   8UR STORY — email-service.js (v2.0 - Fix Mobile PDF & Anti-Spam)
+   8UR STORY — email-service.js (v3.1 FINAL - Full & Anti-Spam)
    Khusus menangani Email Otomatis & Download Invoice PDF
    ============================================================ */
 
@@ -10,36 +10,42 @@
     }
 })();
 
-// 2. FUNGSI KIRIM EMAIL DENGAN FOTO PRODUK (DIPANGGIL OLEH SCRIPT.JS)
+// 2. FUNGSI KIRIM EMAIL (100% BERSIH TANPA GAMBAR RUSAK DARI RENDER)
 function sendEmailInvoice(orderData) {
     const serviceID  = "service_xzsw3fl"; 
     const templateID = "template_klxhg3v";
-    const siteOrigin = "https://eightur-story.onrender.com";
 
-    // Merakit HTML Tabel Barang lengkap dengan Foto Produk untuk dikirim via EmailJS
-    let itemsHTML = `<table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">`;
+    // Merakit HTML Tabel Barang dengan Lencana Nomor (#1, #2) Murni CSS
+    // Dijamin 100% tampil rapi di semua HP & tidak pernah pecah di Gmail
+    let itemsHTML = `<table style="width: 100%; border-collapse: collapse; font-family: Arial, Helvetica, sans-serif;">`;
     
-    orderData.items.forEach(item => {
-        // Pastikan URL gambar menggunakan domain penuh https:// agar tampil di Gmail
-        let imgUrl = item.image || "images/logo.png";
-        if (!imgUrl.startsWith("http")) {
-            imgUrl = siteOrigin + "/" + imgUrl.replace(/^\//, "");
-        } else if (imgUrl.includes("localhost") || imgUrl.includes("127.0.0.1")) {
-            const fileName = imgUrl.split("/images/")[1] || "logo.png";
-            imgUrl = siteOrigin + "/images/" + fileName;
-        }
+    orderData.items.forEach((item, idx) => {
+        const unitPrice = item.pricePerItem 
+            ? item.pricePerItem.toLocaleString('id-ID') 
+            : item.totalPrice.toLocaleString('id-ID');
 
         itemsHTML += `
             <tr style="border-bottom: 1px solid #E5E7EB;">
-                <td style="padding: 10px 8px 10px 0; width: 56px; vertical-align: middle;">
-                    <img src="${imgUrl}" alt="${item.product}" style="width: 52px; height: 52px; object-fit: contain; border-radius: 8px; border: 1px solid #E5E7EB; background-color: #F9FAFB; padding: 3px; display: block;">
+                <td style="padding: 12px 10px 12px 0; width: 38px; vertical-align: top;">
+                    <div style="width: 34px; height: 34px; line-height: 34px; text-align: center; background-color: #FEF2F2; color: #E83124; border: 1px solid #FECACA; border-radius: 8px; font-weight: bold; font-size: 13px;">
+                        #${idx + 1}
+                    </div>
                 </td>
-                <td style="padding: 10px 0; font-size: 13px; color: #111827; vertical-align: middle;">
-                    <strong>${item.product}</strong><br>
-                    <span style="font-size: 11.5px; color: #6B7280;">Warna: ${item.color} | Ukuran: ${item.size}</span>
+                <td style="padding: 12px 0; font-size: 13.5px; color: #111827; vertical-align: top;">
+                    <strong style="display: block; margin-bottom: 3px; color: #111827;">${item.product}</strong>
+                    <span style="font-size: 11.5px; color: #6B7280; display: block;">
+                        Warna: ${item.color} | Ukuran: ${item.size}
+                    </span>
+                    <span style="font-size: 11px; color: #9CA3AF; display: block; margin-top: 2px;">
+                        Harga Satuan: Rp ${unitPrice} | File: ${item.designFile || 'Desain Default'}
+                    </span>
                 </td>
-                <td style="padding: 10px 6px; text-align: center; font-size: 13px; color: #111827; vertical-align: middle;">x${item.qty}</td>
-                <td style="padding: 10px 0; text-align: right; font-weight: bold; font-size: 13px; color: #E83124; vertical-align: middle;">Rp ${item.totalPrice.toLocaleString('id-ID')}</td>
+                <td style="padding: 12px 8px; text-align: center; font-size: 13px; font-weight: bold; color: #374151; vertical-align: top; white-space: nowrap;">
+                    x${item.qty}
+                </td>
+                <td style="padding: 12px 0; text-align: right; font-weight: 800; font-size: 13.5px; color: #E83124; vertical-align: top; white-space: nowrap;">
+                    Rp ${item.totalPrice.toLocaleString('id-ID')}
+                </td>
             </tr>
         `;
     });
@@ -59,11 +65,13 @@ function sendEmailInvoice(orderData) {
     if (typeof emailjs !== 'undefined') {
         emailjs.send(serviceID, templateID, templateParams)
             .then(() => {
-                console.log("SUKSES! Email bukti pesanan bergambar terkirim ke: " + orderData.email);
+                console.log("SUKSES! Email Invoice resmi terkirim ke: " + orderData.email);
             })
             .catch((err) => {
                 console.error("GAGAL mengirim email:", err);
             });
+    } else {
+        console.error("Pustaka EmailJS belum termuat di halaman checkout.html");
     }
 }
 
@@ -80,6 +88,10 @@ function downloadInvoicePDF(orderData) {
 
     let itemsHTML = "";
     orderData.items.forEach((item, index) => {
+        const unitPrice = item.pricePerItem 
+            ? item.pricePerItem.toLocaleString('id-ID') 
+            : item.totalPrice.toLocaleString('id-ID');
+
         itemsHTML += `
             <tr style="border-bottom: 1px solid #E5E7EB; background-color: ${index % 2 === 0 ? '#FFFFFF' : '#F9FAFB'};">
                 <td style="padding: 12px 10px; color: #111827; font-weight: 600; font-size: 12px;">
@@ -89,7 +101,7 @@ function downloadInvoicePDF(orderData) {
                     </div>
                 </td>
                 <td style="padding: 12px 10px; text-align: center; font-size: 12px; color: #111827; font-weight: 600;">${item.qty}</td>
-                <td style="padding: 12px 10px; text-align: right; font-size: 12px; color: #374151;">Rp ${item.pricePerItem.toLocaleString('id-ID')}</td>
+                <td style="padding: 12px 10px; text-align: right; font-size: 12px; color: #374151;">Rp ${unitPrice}</td>
                 <td style="padding: 12px 10px; text-align: right; font-weight: 700; font-size: 12px; color: #111827;">Rp ${item.totalPrice.toLocaleString('id-ID')}</td>
             </tr>
         `;
@@ -114,12 +126,12 @@ function downloadInvoicePDF(orderData) {
                 <tr>
                     <td style="vertical-align: top;">
                         <div style="color: #E83124; font-size: 28px; font-weight: 900; letter-spacing: 0.5px;">8UR STORY</div>
-                        <div style="color: #4B5563; font-size: 12px; margin-top: 4px; font-weight: 600;">Official Custom Apparel & Streetwear</div>
+                        <div style="color: #4B5563; font-size: 12px; margin-top: 4px; font-weight: 600;">Official Custom Apparel &amp; Streetwear</div>
                         <div style="color: #6B7280; font-size: 11px; margin-top: 2px;">Kota Bekasi, Jawa Barat, Indonesia</div>
                     </td>
                     <td style="vertical-align: top; text-align: right;">
                         <div style="color: #111827; font-size: 22px; font-weight: 900; letter-spacing: 1.5px;">INVOICE</div>
-                        <div style="color: #374151; font-size: 12px; margin-top: 6px;"><strong>No. Pesanan:</strong> ${orderData.orderId}</div>
+                        <div style="color: #374151; font-size: 12px; margin-top: 6px;"><strong>No. Pesanan:</strong> #${orderData.orderId}</div>
                         <div style="color: #6B7280; font-size: 11px; margin-top: 2px;"><strong>Tanggal:</strong> ${orderData.date}</div>
                         <div style="margin-top: 8px;">
                             <span style="display: inline-block; background-color: #10B981; color: #FFFFFF; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; letter-spacing: 0.5px;">
@@ -134,7 +146,7 @@ function downloadInvoicePDF(orderData) {
             <table style="width: 100%; margin-bottom: 24px; background-color: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 14px;">
                 <tr>
                     <td style="vertical-align: top; width: 60%;">
-                        <div style="font-size: 10px; color: #6B7280; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">DITAGIHKAN & DIKIRIM KEPADA:</div>
+                        <div style="font-size: 10px; color: #6B7280; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">DITAGIHKAN &amp; DIKIRIM KEPADA:</div>
                         <div style="font-size: 15px; font-weight: bold; color: #111827; margin-top: 4px;">${orderData.name}</div>
                         <div style="font-size: 12px; color: #374151; margin-top: 3px;">WhatsApp: ${orderData.phone}</div>
                         <div style="font-size: 12px; color: #374151; margin-top: 2px;">Email: ${orderData.email}</div>
@@ -186,7 +198,7 @@ function downloadInvoicePDF(orderData) {
                     Simpan bukti pembayaran ini sebagai referensi pesanan Anda. Tim kami akan menghubungi WhatsApp Anda untuk pengiriman resi.
                 </div>
                 <div style="font-size: 10px; color: #9CA3AF; margin-top: 8px;">
-                    &copy; 2026 8UR STORY Official • Dokumen Sah & Diterbitkan Otomatis oleh Sistem
+                    &copy; 2026 8UR STORY Official • Dokumen Sah &amp; Diterbitkan Otomatis oleh Sistem
                 </div>
             </div>
         </div>
