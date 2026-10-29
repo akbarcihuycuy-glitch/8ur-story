@@ -6,6 +6,10 @@
   <title>Checkout — 8UR STORY</title>
   <link rel="icon" href="images/logo.png">
   <link rel="stylesheet" href="style.css">
+
+  <!-- Pustaka External untuk EmailJS & Cetak PDF Invoice -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <div id="page-progress"></div>
@@ -68,6 +72,11 @@
       <div class="floating-group">
         <input type="tel" id="buyer-phone" placeholder=" " required>
         <label>Nomor WhatsApp Aktif (Contoh: 08123456789)</label>
+      </div>
+      <!-- KOLOM ALAMAT EMAIL UNTUK INVOICE OTOMATIS -->
+      <div class="floating-group">
+        <input type="email" id="buyer-email" placeholder=" " required>
+        <label>Alamat Email Aktif (Untuk Pengiriman Invoice)</label>
       </div>
       <div class="floating-group">
         <textarea id="buyer-address" rows="3" placeholder=" " required></textarea>
@@ -150,7 +159,7 @@
   </div>
 </div>
 
-<!-- POP UP 2: Pembayaran Diterima (Sukses + Audio) -->
+<!-- POP UP 2: Pembayaran Diterima (Sukses + Audio + Unduh Invoice PDF) -->
 <div class="modal-overlay" id="success-modal">
   <div class="modal-content" style="text-align:center;max-width:450px">
     <div style="font-size:4rem;margin-bottom:14px;animation:fadeInUp .5s ease both">✅</div>
@@ -159,10 +168,14 @@
       <p style="font-size:12.5px;color:var(--muted);margin-bottom:4px">Nomor Pesanan Anda:</p>
       <h4 id="success-order-id" style="font-size:1.35rem;color:var(--dark);letter-spacing:1px;font-weight:800"></h4>
     </div>
-    <p style="color:var(--muted);line-height:1.7;margin-bottom:24px;font-size:14px">
-      Terima kasih telah berbelanja di <strong>8UR STORY</strong>! Bukti pembayaran Anda telah kami terima dan akan segera divalidasi.<br><br>
-      Tim admin kami akan menghubungi Anda via WhatsApp untuk konfirmasi detail pesanan. Produk akan diproses dalam <strong>1-3 hari kerja</strong>.
+    <p style="color:var(--muted);line-height:1.7;margin-bottom:20px;font-size:13.5px">
+      Terima kasih telah berbelanja di <strong>8UR STORY</strong>! Struk <strong>Invoice resmi telah dikirim otomatis ke Email Anda</strong>.<br><br>
+      Tim admin kami juga akan menghubungi Anda via WhatsApp untuk konfirmasi pesanan (diproses <strong>1-3 hari kerja</strong>).
     </p>
+    <!-- TOMBOL UNDUH INVOICE PDF -->
+    <button type="button" class="btn-secondary-dark" onclick="if(window.currentOrderData){downloadInvoicePDF(window.currentOrderData)}" style="width:100%;margin-bottom:10px;font-size:14px;">
+      📄 Unduh Invoice (PDF)
+    </button>
     <a href="index.html" class="btn-primary" style="display:inline-flex;width:100%">Kembali ke Beranda</a>
   </div>
 </div>
@@ -192,6 +205,8 @@
   </div>
 </div>
 
+<!-- Memuat email-service.js terlebih dahulu, baru script.js -->
+<script src="email-service.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
