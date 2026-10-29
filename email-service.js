@@ -10,23 +10,36 @@
     }
 })();
 
-// 2. FUNGSI KIRIM EMAIL (DIPANGGIL OLEH SCRIPT.JS)
+// 2. FUNGSI KIRIM EMAIL DENGAN FOTO PRODUK (DIPANGGIL OLEH SCRIPT.JS)
 function sendEmailInvoice(orderData) {
     const serviceID  = "service_xzsw3fl"; 
     const templateID = "template_klxhg3v";
+    const siteOrigin = "https://eightur-story.onrender.com";
 
-    // Merakit HTML Tabel Barang yang bersih untuk EmailJS
+    // Merakit HTML Tabel Barang lengkap dengan Foto Produk untuk dikirim via EmailJS
     let itemsHTML = `<table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">`;
     
     orderData.items.forEach(item => {
+        // Pastikan URL gambar menggunakan domain penuh https:// agar tampil di Gmail
+        let imgUrl = item.image || "images/logo.png";
+        if (!imgUrl.startsWith("http")) {
+            imgUrl = siteOrigin + "/" + imgUrl.replace(/^\//, "");
+        } else if (imgUrl.includes("localhost") || imgUrl.includes("127.0.0.1")) {
+            const fileName = imgUrl.split("/images/")[1] || "logo.png";
+            imgUrl = siteOrigin + "/images/" + fileName;
+        }
+
         itemsHTML += `
             <tr style="border-bottom: 1px solid #E5E7EB;">
-                <td style="padding: 10px 0; font-size: 13px; color: #111827;">
-                    <strong>${item.product}</strong><br>
-                    <span style="font-size: 11px; color: #6B7280;">Warna: ${item.color} | Ukuran: ${item.size}</span>
+                <td style="padding: 10px 8px 10px 0; width: 56px; vertical-align: middle;">
+                    <img src="${imgUrl}" alt="${item.product}" style="width: 52px; height: 52px; object-fit: contain; border-radius: 8px; border: 1px solid #E5E7EB; background-color: #F9FAFB; padding: 3px; display: block;">
                 </td>
-                <td style="padding: 10px 0; text-align: center; font-size: 13px; color: #111827;">x${item.qty}</td>
-                <td style="padding: 10px 0; text-align: right; font-weight: bold; font-size: 13px; color: #111827;">Rp ${item.totalPrice.toLocaleString('id-ID')}</td>
+                <td style="padding: 10px 0; font-size: 13px; color: #111827; vertical-align: middle;">
+                    <strong>${item.product}</strong><br>
+                    <span style="font-size: 11.5px; color: #6B7280;">Warna: ${item.color} | Ukuran: ${item.size}</span>
+                </td>
+                <td style="padding: 10px 6px; text-align: center; font-size: 13px; color: #111827; vertical-align: middle;">x${item.qty}</td>
+                <td style="padding: 10px 0; text-align: right; font-weight: bold; font-size: 13px; color: #E83124; vertical-align: middle;">Rp ${item.totalPrice.toLocaleString('id-ID')}</td>
             </tr>
         `;
     });
@@ -34,7 +47,7 @@ function sendEmailInvoice(orderData) {
 
     const templateParams = {
         to_email: orderData.email,
-        email: "cuanmoney291@gmail.com", // Mengisi variabel {{email}} pada Reply-To agar tidak dianggap spam
+        email: "cuanmoney291@gmail.com",
         buyer_name: orderData.name,
         order_id: orderData.orderId,
         order_date: orderData.date,
@@ -46,7 +59,7 @@ function sendEmailInvoice(orderData) {
     if (typeof emailjs !== 'undefined') {
         emailjs.send(serviceID, templateID, templateParams)
             .then(() => {
-                console.log("SUKSES! Email bukti pesanan terkirim ke: " + orderData.email);
+                console.log("SUKSES! Email bukti pesanan bergambar terkirim ke: " + orderData.email);
             })
             .catch((err) => {
                 console.error("GAGAL mengirim email:", err);
