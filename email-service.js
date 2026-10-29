@@ -10,46 +10,45 @@
     }
 })();
 
-// 2. FUNGSI KIRIM EMAIL (100% BERSIH TANPA GAMBAR RUSAK DARI RENDER)
+// 2. FUNGSI KIRIM EMAIL (versi ringan: tanpa gambar, tanpa gradient, anti-spam)
+// Membersihkan teks varian agar tidak ada harga ganda, misal "S (46cm x 68cm) — Rp 99.000"
+function cleanVariant(text) {
+    return String(text || '-').replace(/\s*[—–-]\s*Rp\s*[\d.,]+\s*$/i, '').trim();
+}
+
 function sendEmailInvoice(orderData) {
-    const serviceID  = "service_xzsw3fl"; 
+    const serviceID  = "service_xzsw3fl";
     const templateID = "template_klxhg3v";
 
-    // Merakit HTML Tabel Barang dengan Lencana Nomor (#1, #2) Murni CSS
-    // Dijamin 100% tampil rapi di semua HP & tidak pernah pecah di Gmail
-    let itemsHTML = `<table style="width: 100%; border-collapse: collapse; font-family: Arial, Helvetica, sans-serif;">`;
-    
-    orderData.items.forEach((item, idx) => {
-        const unitPrice = item.pricePerItem 
-            ? item.pricePerItem.toLocaleString('id-ID') 
-            : item.totalPrice.toLocaleString('id-ID');
+    if (typeof emailjs === 'undefined') {
+        console.error("Pustaka EmailJS belum termuat di halaman checkout.html");
+        return Promise.reject(new Error("EmailJS belum termuat"));
+    }
+    if (!orderData || !orderData.email || !/^\S+@\S+\.\S+$/.test(orderData.email)) {
+        console.error("Email pembeli tidak valid:", orderData && orderData.email);
+        return Promise.reject(new Error("Email pembeli tidak valid"));
+    }
 
+    // Tabel barang sederhana (tanpa badge, tanpa warna mencolok)
+    let itemsHTML = '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;">';
+
+    orderData.items.forEach((item) => {
+        const unitPrice = (item.pricePerItem || item.totalPrice).toLocaleString('id-ID');
         itemsHTML += `
-            <tr style="border-bottom: 1px solid #E5E7EB;">
-                <td style="padding: 12px 10px 12px 0; width: 38px; vertical-align: top;">
-                    <div style="width: 34px; height: 34px; line-height: 34px; text-align: center; background-color: #FEF2F2; color: #E83124; border: 1px solid #FECACA; border-radius: 8px; font-weight: bold; font-size: 13px;">
-                        #${idx + 1}
-                    </div>
-                </td>
-                <td style="padding: 12px 0; font-size: 13.5px; color: #111827; vertical-align: top;">
-                    <strong style="display: block; margin-bottom: 3px; color: #111827;">${item.product}</strong>
-                    <span style="font-size: 11.5px; color: #6B7280; display: block;">
-                        Warna: ${item.color} | Ukuran: ${item.size}
-                    </span>
-                    <span style="font-size: 11px; color: #9CA3AF; display: block; margin-top: 2px;">
-                        Harga Satuan: Rp ${unitPrice} | File: ${item.designFile || 'Desain Default'}
+            <tr>
+                <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#222222;">
+                    ${item.product}<br>
+                    <span style="font-size:12px;color:#666666;">
+                        Warna: ${cleanVariant(item.color)}, Ukuran: ${cleanVariant(item.size)}<br>
+                        ${item.qty} x Rp ${unitPrice}
                     </span>
                 </td>
-                <td style="padding: 12px 8px; text-align: center; font-size: 13px; font-weight: bold; color: #374151; vertical-align: top; white-space: nowrap;">
-                    x${item.qty}
-                </td>
-                <td style="padding: 12px 0; text-align: right; font-weight: 800; font-size: 13.5px; color: #E83124; vertical-align: top; white-space: nowrap;">
+                <td align="right" valign="top" style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#222222;white-space:nowrap;">
                     Rp ${item.totalPrice.toLocaleString('id-ID')}
                 </td>
-            </tr>
-        `;
+            </tr>`;
     });
-    itemsHTML += `</table>`;
+    itemsHTML += '</table>';
 
     const templateParams = {
         to_email: orderData.email,
@@ -62,17 +61,15 @@ function sendEmailInvoice(orderData) {
         total_price: orderData.total.toLocaleString('id-ID')
     };
 
-    if (typeof emailjs !== 'undefined') {
-        emailjs.send(serviceID, templateID, templateParams)
-            .then(() => {
-                console.log("SUKSES! Email Invoice resmi terkirim ke: " + orderData.email);
-            })
-            .catch((err) => {
-                console.error("GAGAL mengirim email:", err);
-            });
-    } else {
-        console.error("Pustaka EmailJS belum termuat di halaman checkout.html");
-    }
+    return emailjs.send(serviceID, templateID, templateParams)
+        .then((res) => {
+            console.log("Email invoice terkirim ke: " + orderData.email);
+            return res;
+        })
+        .catch((err) => {
+            console.error("GAGAL mengirim email:", err);
+            throw err;
+        });
 }
 
 // 3. FUNGSI DOWNLOAD INVOICE PDF PROFESIONAL (ANTI-BLANK DI HP & LAPTOP)
