@@ -1,6 +1,6 @@
 /* ============================================================
-   8UR STORY — script.js  v2.9 FINAL
-   (Smart Conversational LISA CS + Anti-Troll Size + Waji Trigger)
+   8UR STORY — script.js  v3.0 FINAL
+   (EmailJS Auto-Invoice + PDF Download + Smart LISA CS + Waji Trigger)
    ============================================================ */
 'use strict';
 
@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
-     8. CHECKOUT PAGE + TIMER 1 MENIT + POP-UP GAGAL + AUDIO SUKSES
+     8. CHECKOUT PAGE + TIMER 1 MENIT + EMAILJS + INVOICE PDF + AUDIO SUKSES
   ══════════════════════════════════════ */
   const btnConfirm     = document.getElementById('btn-confirm-order');
   const paymentModal   = document.getElementById('payment-modal');
@@ -584,14 +584,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const nameEl  = document.getElementById('buyer-name');
       const phoneEl = document.getElementById('buyer-phone');
+      const emailEl = document.getElementById('buyer-email');
       const addrEl  = document.getElementById('buyer-address');
 
       const name  = nameEl?.value.trim();
       const phone = phoneEl?.value.trim();
+      const email = emailEl?.value.trim();
       const addr  = addrEl?.value.trim();
 
       if (!name)  { showToast('Mohon isi Nama Lengkap Anda', '⚠️'); nameEl?.focus(); return; }
       if (!phone) { showToast('Mohon isi Nomor WhatsApp Aktif', '⚠️'); phoneEl?.focus(); return; }
+      if (!email || !email.includes('@')) { showToast('Mohon isi Alamat Email yang Valid', '⚠️'); emailEl?.focus(); return; }
       if (!addr)  { showToast('Mohon isi Alamat Pengiriman Lengkap', '⚠️'); addrEl?.focus(); return; }
 
       openPaymentPopup();
@@ -644,6 +647,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const orderIdEl = document.getElementById('success-order-id');
       if (orderIdEl) orderIdEl.textContent = finalOrderID;
+
+      /* Kumpulkan Data Pesanan untuk EmailJS & Download PDF Invoice */
+      const cartData = JSON.parse(localStorage.getItem('8urStoryCart')) || [];
+      const selectedPayment = document.querySelector('input[name="payment"]:checked')?.value || 'QRIS';
+
+      const orderData = {
+        orderId: finalOrderID,
+        name: document.getElementById('buyer-name')?.value.trim() || 'Pelanggan 8UR STORY',
+        phone: document.getElementById('buyer-phone')?.value.trim() || '-',
+        email: document.getElementById('buyer-email')?.value.trim() || '-',
+        address: document.getElementById('buyer-address')?.value.trim() || '-',
+        paymentMethod: selectedPayment,
+        date: new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }),
+        total: checkoutTotal,
+        items: cartData
+      };
+
+      /* Simpan global agar tombol "Unduh Invoice (PDF)" bisa langsung dipakai */
+      window.currentOrderData = orderData;
+
+      /* Kirim Email Invoice Instan via email-service.js */
+      if (typeof sendEmailInvoice === 'function') {
+        sendEmailInvoice(orderData);
+        showToast(`Invoice dikirim ke ${orderData.email}`, '📧');
+      }
 
       localStorage.removeItem('8urStoryCart');
       updateCartCount();
@@ -1099,18 +1127,10 @@ document.addEventListener('DOMContentLoaded', function () {
       greetBubble.style.display = 'none';
     });
 
-    /* ════════════════════════════════════════════════════════════════
-       OTAK AI LISA v2.9:
-       1. Trigger Marah/Ngamuk jika ada kata "waji" (Waji / waji / WAJI)
-       2. Detektor Anti-Troll untuk Berat/Tinggi Badan tidak masuk akal
-       3. Kalkulator Ukuran Akurat + Link Produk
-       4. Respons Kontekstual Pertanyaan Iseng & Sarkas Halus + Sopan
-    ════════════════════════════════════════════════════════════════ */
     function generateSmartCSReply(rawText) {
       const cleanRaw = rawText.trim();
       const text     = cleanRaw.toLowerCase();
 
-      /* 1. TRIGGER KHUSUS KATA KUNCI "WAJI" (RESPON MARAH / NGAMUK) */
       if (/waji/i.test(cleanRaw)) {
         const angryReplies = [
           `Mending lu diam, gausah ngetik... tololl!! 🤬 Datang-datang bukannya belanja malah nyebut-nyebut itu, minggir lu sana! 💢`,
@@ -1120,7 +1140,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return angryReplies[Math.floor(Math.random() * angryReplies.length)];
       }
 
-      /* 2. DETEKSI ANGKA BERAT BADAN (KG) & TINGGI BADAN (CM) + FILTER ANTI-TROLL */
       const numbers = cleanRaw.match(/\d{1,4}/g);
       let weight = null;
       let height = null;
@@ -1149,7 +1168,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       if (weight !== null || height !== null) {
-        /* Cek jika angka tidak masuk akal / pembeli iseng (Anti-Troll) */
         if ((weight !== null && weight > 130) || (height !== null && height > 205)) {
           return `
             Busett ${weight ? `berat <strong>${weight} kg</strong>` : ''} ${height ? `tinggi <strong>${height} cm</strong>` : ''}?! 😱🗿<br><br>
@@ -1169,7 +1187,6 @@ document.addEventListener('DOMContentLoaded', function () {
           `;
         }
 
-        /* Jika angka realistis (Normal 30–130 kg & 125–205 cm) */
         let recSize = 'L';
         let kaosDims = '50 cm x 72 cm';
         let kaosPrice = 'Rp 95.000';
@@ -1209,7 +1226,6 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      /* 3. PERTANYAAN TENTANG KEMAJUAN TOKO / BISNIS (Seperti di Screenshot) */
       if (text.includes('kemajuan') || text.includes('maju') || text.includes('bangkrut') || text.includes('laku') || text.includes('masa depan') || text.includes('sukses')) {
         return `
           Wah jelas bakal maju pesat dong Kak! 🚀 Buktinya sekarang aja udah lebih dari <strong>1.500+ produk terjual</strong> dan katalog kita makin lengkap dari Kaos, Hoodie, Topi, sampai Bantal Custom!<br><br>
@@ -1221,7 +1237,6 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      /* 4. PERTANYAAN ISENG: JODOH / PACAR / CINTA / BUCIN */
       if (text.includes('pacar') || text.includes('jomblo') || text.includes('nikah') || text.includes('jodoh') || text.includes('sayang') || text.includes('cinta') || text.includes('cantik')) {
         return `
           Waduhh Kak, LISA di sini tugasnya bantu carikan ukuran kaos, bukan biro jodoh 😅🗿.<br><br>
@@ -1233,7 +1248,6 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      /* 5. PERTANYAAN ISENG: MAKAN / LAPAR / KOPI / NGANTUK */
       if (text.includes('makan') || text.includes('lapar') || text.includes('laper') || text.includes('haus') || text.includes('kopi') || text.includes('ngantuk') || text.includes('tidur')) {
         return `
           Haha kalau lapar itu buka aplikasi ojek makanan Kak, masa masuk ke toko baju 8UR STORY 🗿😂.<br><br>
@@ -1245,7 +1259,6 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      /* 6. PERTANYAAN TAWAR HARGA / MINTA DISKON / GRATIS / MAHAL */
       if (text.includes('diskon') || text.includes('nego') || text.includes('kurangin') || text.includes('mahal') || text.includes('gratis') || text.includes('murah')) {
         return `
           Waduh Kak, harga di <strong>8UR STORY</strong> (mulai Rp 45rb–89rb) itu udah paling ramah di kantong buat kelas bahan <strong>Cotton Combed 24s & Sablon DTF Premium</strong> lho! 😊<br><br>
@@ -1257,7 +1270,6 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      /* 7. TANYA IDENTITAS LISA (SIAPA KAMU / BOT / AI) */
       if (text.includes('siapa') || text.includes('bot') || text.includes('robot') || text.includes('manusia') || text.includes('asli')) {
         return `
           Aku <strong>LISA</strong> Kak, Customer Service & Stylist resmi di <strong>8UR STORY</strong>! 👩‍💼✨<br><br>
@@ -1265,7 +1277,6 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      /* 8. SAPAAN SINGKAT (HALO / P / PING / PAGI / MALAM) */
       if (/^(halo|hai|hi|p|ping|tes|test|assalamualaikum|pagi|siang|sore|malam)$/i.test(cleanRaw)) {
         return `
           Halo juga Kak! 👋 Senang banget Kakak mampir ke <strong>8UR STORY</strong>.<br><br>
@@ -1273,7 +1284,6 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      /* 9. TANYA UKURAN UMUM (BELUM SEBUT ANGKA) */
       if (text.includes('ukuran') || text.includes('size') || text.includes('chart') || text.includes('melar') || text.includes('sempit')) {
         return `
           Boleh banget Kak! Biar LISA bantu hitungkan ukuran paling akurat (S sampai XXXL), <strong>berapa perkiraan Berat Badan (kg) dan Tinggi Badan (cm) Kakak?</strong> 😊<br><br>
@@ -1281,13 +1291,12 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      /* 10. TANYA ALUR SELESAI BAYAR / PENGIRIMAN */
       if (text.includes('selesai bayar') || text.includes('sudah bayar') || text.includes('habis bayar') || text.includes('ngapain') || text.includes('bukti') || text.includes('proses') || text.includes('kirim') || text.includes('berapa lama')) {
         return `
           Tenang Kak, proses di <strong>8UR STORY</strong> super jelas dan aman! 🔒<br><br>
           <strong>Alur Setelah Kakak Klik Bayar:</strong><br>
           1️⃣ Muncul QRIS / Nomor Virtual Account beserta batas waktu <strong>1 menit</strong> untuk unggah foto bukti transfer.<br>
-          2️⃣ Setelah klik <strong>"Saya Sudah Bayar"</strong>, sistem otomatis menerbitkan <strong>Nomor Pesanan (ORD-xxxxxx)</strong>.<br>
+          2️⃣ Setelah klik <strong>"Saya Sudah Bayar"</strong>, sistem otomatis menerbitkan <strong>Nomor Pesanan (ORD-xxxxxx)</strong> & mengirim <strong>Invoice ke Email Kakak</strong>.<br>
           3️⃣ Tim Admin kami akan menghubungi WhatsApp Kakak untuk konfirmasi pratinjau desain & resi pengiriman.<br>
           4️⃣ Pesanan diproduksi kilat <strong>1–3 hari kerja</strong> dengan Quality Control ketat!<br><br>
           Yuk mulai pilih produk favorit Kakak:
@@ -1298,7 +1307,6 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      /* 11. TANYA REKOMENDASI PRODUK */
       if (text.includes('rekomendasi') || text.includes('bagus') || text.includes('bingung') || text.includes('kado') || text.includes('hadiah') || text.includes('laris') || text.includes('produk')) {
         return `
           Ini dia <strong>Top Produk Paling Favorit</strong> rekomendasi LISA di 8UR STORY yang wajib Kakak coba: 🔥
@@ -1321,7 +1329,6 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      /* 12. TANYA SPESIFIKASI PRODUK SPESIFIK */
       if (text.includes('topi')) {
         return `
           Untuk <strong>Topi Baseball Custom</strong> kami memakai bahan <em>Cotton Twill Premium</em> yang kokoh dengan pengait besi belakang (All Size). Bisa cetak DTF (Rp 49.000) atau <strong>Upgrade Bordir Timbul 3D</strong> (+Rp 10.000)! 🧢
@@ -1350,7 +1357,6 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      /* 13. TANYA GARANSI / BAHAN */
       if (text.includes('garansi') || text.includes('cacat') || text.includes('retur') || text.includes('aman') || text.includes('percaya') || text.includes('bahan') || text.includes('luntur')) {
         return `
           Kakak gak perlu ragu sedikit pun! 🛡️ Di <strong>8UR STORY</strong> berlaku <strong>Garansi Kepuasan 100%</strong>:<br><br>
@@ -1361,7 +1367,6 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
       }
 
-      /* 14. JAWABAN OUT-OF-TOPIC (KOMBINASI OPSI B SARKAS HALUS & OPSI A SOPAN MENGARAHKAN) */
       const outOfTopicReplies = [
         `Waduh, pertanyaan Kakak tentang <em>"${cleanRaw}"</em> agak di luar nurul nih buat LISA 🗿😅.<br><br>Maaf ya Kak, LISA cuma asisten toko yang jago urusan <em>streetwear</em> & sablon custom. Mending kita ngomongin kaos atau hoodie impian Kakak yuk, lagi cari ukuran apa nih?
         <a href="product-pendek.html" class="cs-product-link-card">
