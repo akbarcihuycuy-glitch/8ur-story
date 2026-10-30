@@ -1,6 +1,6 @@
 /* ============================================================
-   8UR STORY — script.js  v4.0 FINAL
-   (GAS Auto-Invoice + PDF Download + Smart LISA CS + Full Voice Over)
+   8UR STORY — script.js  v5.0 FINAL
+   (HTML5 Audio Tag Preload + Unlock Terpisah + Auto Stop 10s)
    ============================================================ */
 'use strict';
 
@@ -37,49 +37,46 @@ document.addEventListener('DOMContentLoaded', function () {
     window.location.pathname.toLowerCase().includes('checkout') ||
     window.location.pathname.toLowerCase().includes('cart');
 
-  if (!isCheckoutOrCart && !sessionStorage.getItem('8ur_welcome_voiced')) {
-    const welcomeFiles = [
-      'sound/selamat%20datang.MP3',
-      'sound/selamat%20datang.mp3'
-    ];
-    let wIdx = 0;
-    const welcomeAudio = new Audio();
-    welcomeAudio.preload = 'auto';
-    welcomeAudio.src = welcomeFiles[wIdx];
+  if (!isCheckoutOrCart) {
+    let welcomeEl = document.getElementById('vo-welcome');
+    if (!welcomeEl) {
+      welcomeEl = document.createElement('audio');
+      welcomeEl.id = 'vo-welcome';
+      welcomeEl.preload = 'auto';
+      welcomeEl.innerHTML = `
+        <source src="sound/selamat%20datang.MP3" type="audio/mpeg">
+        <source src="sound/selamat%20datang.mp3" type="audio/mpeg">
+        <source src="sound/selamat datang.MP3" type="audio/mpeg">
+      `;
+      document.body.appendChild(welcomeEl);
+    }
 
-    welcomeAudio.addEventListener('error', function handleWelcomeErr() {
-      wIdx++;
-      if (wIdx < welcomeFiles.length) {
-        welcomeAudio.src = welcomeFiles[wIdx];
-        welcomeAudio.load();
-      }
-    });
+    let welcomePlayed = false;
 
-    function triggerWelcomeVoice() {
-      if (sessionStorage.getItem('8ur_welcome_voiced')) return;
-      const playPromise = welcomeAudio.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          sessionStorage.setItem('8ur_welcome_voiced', 'true');
-          removeWelcomeListeners();
+    function playWelcomeNow() {
+      if (welcomePlayed) return;
+      welcomeEl.muted = false;
+      welcomeEl.volume = 1.0;
+      const p = welcomeEl.play();
+      if (p !== undefined) {
+        p.then(() => {
+          welcomePlayed = true;
+          ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
+            document.removeEventListener(evt, playWelcomeNow, true);
+          });
         }).catch(() => {
-          /* Jika tertahan kebijakan browser, otomatis aktif begitu ada gerakan/sentuhan pertama */
+          /* Menunggu sentuhan/klik pertama yang diizinkan oleh browser */
         });
       }
     }
 
-    function removeWelcomeListeners() {
-      ['pointerdown', 'touchstart', 'wheel', 'scroll', 'keydown', 'click'].forEach(evt => {
-        window.removeEventListener(evt, triggerWelcomeVoice, { capture: true });
-      });
-    }
+    /* 1. Langsung coba putar saat halaman terbuka */
+    playWelcomeNow();
+    window.addEventListener('load', playWelcomeNow);
 
-    /* 1. Coba langsung putar otomatis saat halaman selesai dimuat */
-    setTimeout(triggerWelcomeVoice, 350);
-
-    /* 2. Pengaman instan jika browser menahan autoplay awal */
-    ['pointerdown', 'touchstart', 'wheel', 'scroll', 'keydown', 'click'].forEach(evt => {
-      window.addEventListener(evt, triggerWelcomeVoice, { once: false, passive: true, capture: true });
+    /* 2. Jika ditahan kebijakan Autoplay Chrome/Safari, putar detik itu juga saat layar disentuh/diklik */
+    ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
+      document.addEventListener(evt, playWelcomeNow, { capture: true, passive: true });
     });
   }
 
@@ -481,34 +478,32 @@ document.addEventListener('DOMContentLoaded', function () {
   let paymentTimerInterval = null;
   let remainingSeconds     = 60;
 
-  /* A. Audio Pembayaran Diterima */
-  const paymentSuccessSound = new Audio();
-  paymentSuccessSound.preload = 'auto';
-  paymentSuccessSound.src = 'sound/pembayaran%20diterima.MP3';
-  paymentSuccessSound.addEventListener('error', function fallbackAudio() {
-    paymentSuccessSound.removeEventListener('error', fallbackAudio);
-    paymentSuccessSound.src = 'sound/pembayaran%20diterima.mp3';
-    paymentSuccessSound.load();
-  });
+  /* Ambil elemen <audio> fisik dari checkout.html (atau buat otomatis jika belum ada) */
+  let paymentSuccessSound = document.getElementById('vo-success');
+  if (!paymentSuccessSound) {
+    paymentSuccessSound = document.createElement('audio');
+    paymentSuccessSound.id = 'vo-success';
+    paymentSuccessSound.preload = 'auto';
+    paymentSuccessSound.innerHTML = `
+      <source src="sound/pembayaran%20diterima.MP3" type="audio/mpeg">
+      <source src="sound/pembayaran%20diterima.mp3" type="audio/mpeg">
+    `;
+    document.body.appendChild(paymentSuccessSound);
+  }
 
-  /* B. Audio Peringatan 10 Detik (Waktu Habis) - Mendukung 1 atau 2 spasi */
-  const tenSecCandidates = [
-    'sound/10%20detik%20%20(%20waktu%20habis%20).MP3',
-    'sound/10%20detik%20(%20waktu%20habis%20).MP3',
-    'sound/10%20detik%20%20(%20waktu%20habis%20).mp3',
-    'sound/10%20detik%20(%20waktu%20habis%20).mp3'
-  ];
-  let tenSecIdx = 0;
-  const tenSecWarningSound = new Audio();
-  tenSecWarningSound.preload = 'auto';
-  tenSecWarningSound.src = tenSecCandidates[tenSecIdx];
-  tenSecWarningSound.addEventListener('error', function fallbackTenSec() {
-    tenSecIdx++;
-    if (tenSecIdx < tenSecCandidates.length) {
-      tenSecWarningSound.src = tenSecCandidates[tenSecIdx];
-      tenSecWarningSound.load();
-    }
-  });
+  let tenSecWarningSound = document.getElementById('vo-10sec');
+  if (!tenSecWarningSound) {
+    tenSecWarningSound = document.createElement('audio');
+    tenSecWarningSound.id = 'vo-10sec';
+    tenSecWarningSound.preload = 'auto';
+    tenSecWarningSound.innerHTML = `
+      <source src="sound/10%20detik%20%20(%20waktu%20habis%20).MP3" type="audio/mpeg">
+      <source src="sound/10%20detik%20(%20waktu%20habis%20).MP3" type="audio/mpeg">
+      <source src="sound/10%20detik%20%20(%20waktu%20habis%20).mp3" type="audio/mpeg">
+      <source src="sound/10%20detik%20(%20waktu%20habis%20).mp3" type="audio/mpeg">
+    `;
+    document.body.appendChild(tenSecWarningSound);
+  }
 
   /* Fungsi Hentikan Suara 10 Detik Seketika */
   function stopTenSecWarningSound() {
@@ -518,24 +513,40 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (e) {}
   }
 
-  /* Fungsi Pembuka Kunci Audio Saat Tombol "Bayar Sekarang" Diklik */
-  let audioUnlocked = false;
+  /* Fungsi Pembuka Kunci Audio (Masing-Masing Punya Status Sendiri agar 10 Detik Pasti Terbuka) */
+  let unlockedSuccess = false;
+  let unlockedTenSec  = false;
+
   function unlockAudioSilently() {
-    if (audioUnlocked) return;
-    [paymentSuccessSound, tenSecWarningSound].forEach(snd => {
-      snd.muted = true;
-      const p = snd.play();
-      if (p !== undefined) {
-        p.then(() => {
-          snd.pause();
-          snd.currentTime = 0;
-          snd.muted = false;
-          audioUnlocked = true;
+    if (!unlockedSuccess) {
+      paymentSuccessSound.muted = true;
+      const p1 = paymentSuccessSound.play();
+      if (p1 !== undefined) {
+        p1.then(() => {
+          paymentSuccessSound.pause();
+          paymentSuccessSound.currentTime = 0;
+          paymentSuccessSound.muted = false;
+          unlockedSuccess = true;
         }).catch(() => {
-          snd.muted = false;
+          paymentSuccessSound.muted = false;
         });
       }
-    });
+    }
+
+    if (!unlockedTenSec) {
+      tenSecWarningSound.muted = true;
+      const p2 = tenSecWarningSound.play();
+      if (p2 !== undefined) {
+        p2.then(() => {
+          tenSecWarningSound.pause();
+          tenSecWarningSound.currentTime = 0;
+          tenSecWarningSound.muted = false;
+          unlockedTenSec = true;
+        }).catch(() => {
+          tenSecWarningSound.muted = false;
+        });
+      }
+    }
   }
 
   let checkoutTotal = 0;
@@ -602,15 +613,23 @@ document.addEventListener('DOMContentLoaded', function () {
         countdownBox.classList.add('danger');
       }
 
-      /* Tepat di Detik ke-10: Putar Voice Over "10 detik ( waktu habis )" */
+      /* Tepat di Detik ke-10: Putar Voice Over "10 detik" */
       if (remainingSeconds === 10) {
         tenSecWarningSound.muted = false;
+        tenSecWarningSound.volume = 1.0;
         tenSecWarningSound.currentTime = 0;
-        tenSecWarningSound.play().catch(err => console.log('10s Audio error:', err));
+        tenSecWarningSound.play().catch(() => {
+          /* Cadangan jika elemen utama gagal */
+          const backup10s = new Audio('sound/10%20detik%20%20(%20waktu%20habis%20).MP3');
+          backup10s.play().catch(() => {
+            const backup10sSingle = new Audio('sound/10%20detik%20(%20waktu%20habis%20).MP3');
+            backup10sSingle.play().catch(e => console.log('Audio 10s error:', e));
+          });
+        });
       }
 
       if (remainingSeconds <= 0) {
-        stopPaymentTimer(false);
+        stopPaymentTimer(false); /* Jangan matikan suara jika masih selesai berbicara */
         if (paymentModal) paymentModal.style.display = 'none';
         setStep(1, true);
         showToast('Waktu pembayaran 1 menit telah habis!', '⏰');
@@ -718,16 +737,16 @@ document.addEventListener('DOMContentLoaded', function () {
       setStep(2);
 
       paymentSuccessSound.muted = false;
+      paymentSuccessSound.volume = 1.0;
       paymentSuccessSound.currentTime = 0;
       paymentSuccessSound.play().catch(() => {
-        const backupAudio = new Audio('sound/pembayaran%20diterima.mp3');
+        const backupAudio = new Audio('sound/pembayaran%20diterima.MP3');
         backupAudio.play().catch(err => console.log('Audio error:', err));
       });
 
       const orderIdEl = document.getElementById('success-order-id');
       if (orderIdEl) orderIdEl.textContent = finalOrderID;
 
-      /* Kumpulkan Data Pesanan untuk Google Apps Script & Download PDF Invoice */
       const cartData = JSON.parse(localStorage.getItem('8urStoryCart')) || [];
       const selectedPayment = document.querySelector('input[name="payment"]:checked')?.value || 'QRIS';
 
@@ -809,7 +828,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* Jika user klik area gelap di luar modal pembayaran, matikan suara 10 detik juga */
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', e => {
       if (e.target === overlay && overlay.id === 'payment-modal') {
