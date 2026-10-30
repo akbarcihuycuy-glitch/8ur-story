@@ -6,8 +6,138 @@
     <title>8UR STORY - Custom T-Shirt & Streetwear</title>
     <link rel="icon" href="images/logo.png">
     <link rel="stylesheet" href="style.css?v=2.6">
-    <!-- Pengaman Ganda Animasi Auto-Slide Testimoni (Anti-Cache) -->
+    <!-- Pengaman Ganda Animasi Auto-Slide Testimoni, Compact Header/Hero & Showcase 3D -->
     <style>
+        /* ── 1. RAMPINGKAN HEADER PALING ATAS & HERO BANNER ── */
+        header {
+            padding-top: 8px !important;
+            padding-bottom: 8px !important;
+            min-height: 56px !important;
+        }
+        header .logo {
+            height: 34px !important;
+        }
+        header .search-bar {
+            padding-top: 7px !important;
+            padding-bottom: 7px !important;
+            font-size: 12.5px !important;
+        }
+        .hero-section {
+            min-height: auto !important;
+            padding: 68px 20px 52px !important; /* Proporsional & tidak ketabrak */
+        }
+        .hero-content h1 {
+            font-size: clamp(1.85rem, 3.6vw, 2.75rem) !important;
+            margin-bottom: 10px !important;
+            line-height: 1.18 !important;
+        }
+        .hero-content p {
+            font-size: 14px !important;
+            margin-bottom: 18px !important;
+            max-width: 600px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+        .hero-badge {
+            margin-bottom: 10px !important;
+            padding: 5px 14px !important;
+            font-size: 11px !important;
+        }
+
+        /* ── 2. STYLING SHOWCASE MOCKUP 3D (ANTI-NABRAK & UKURAN PAS) ── */
+        .box3d-showcase-section {
+            margin-top: 24px !important;    /* Jarak aman dari Hero Banner (tidak nabrak) */
+            margin-bottom: 18px !important; /* Rapat dengan Katalog Produk di bawahnya */
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            position: relative;
+            z-index: 5;
+        }
+        .box3d-card {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            padding: 24px 20px 18px;
+            background: linear-gradient(-45deg, #1a103c, #2d1b69, #4c1d95, #7f1d1d, #1e1b4b);
+            background-size: 300% 300%;
+            animation: cosmicGradientShift 12s ease infinite;
+            box-shadow: 0 22px 50px rgba(17, 24, 39, 0.22);
+            border: 1.5px solid rgba(255, 255, 255, 0.16);
+        }
+        @keyframes cosmicGradientShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .box3d-header {
+            text-align: center;
+            color: #FFFFFF;
+            margin-bottom: 6px;
+            pointer-events: none;
+        }
+        .box3d-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #FFD84A;
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 216, 74, 0.35);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .box3d-header h3 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            margin: 0 0 2px 0;
+            letter-spacing: 0.3px;
+        }
+        .box3d-header p {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.82);
+            margin: 0;
+        }
+        .box3d-iframe-wrapper {
+            width: 100%;
+            height: 320px; /* Dikembalikan tepat 320px di Laptop */
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+        .box3d-iframe-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+            background: transparent;
+        }
+
+        /* ── 3. RAPATKAN JARAK KATALOG PRODUK & 4 KOTAK KEUNGGULAN ── */
+        #katalog {
+            padding-top: 14px !important;
+            margin-top: 0 !important;
+            padding-bottom: 24px !important;
+        }
+        #katalog .section-title {
+            margin-top: 0 !important;
+            margin-bottom: 6px !important;
+        }
+        #katalog .section-subtitle {
+            margin-bottom: 20px !important;
+        }
+        .features-below-catalog {
+            margin-top: 10px !important;
+            margin-bottom: 24px !important;
+            padding-top: 10px !important;
+            padding-bottom: 10px !important;
+        }
+
+        /* ── 4. AUTO-SLIDE TESTIMONI ── */
         .testimonials-marquee-wrapper {
             position: relative;
             width: 100%;
@@ -39,7 +169,28 @@
             0%   { transform: translate3d(0, 0, 0); }
             100% { transform: translate3d(-50%, 0, 0); }
         }
+
         @media (max-width: 768px) {
+            .hero-section {
+                padding: 64px 16px 40px !important;
+            }
+            .box3d-showcase-section {
+                margin-top: 18px !important;
+                margin-bottom: 14px !important;
+            }
+            .box3d-card {
+                padding: 14px 10px 10px;
+                border-radius: 16px;
+            }
+            .box3d-header h3 {
+                font-size: 1.05rem;
+            }
+            .box3d-header p {
+                font-size: 11px;
+            }
+            .box3d-iframe-wrapper {
+                height: 260px; /* Dikembalikan tepat 260px di HP */
+            }
             .testimonials-track { gap: 14px; animation-duration: 55s !important; }
             .testimonials-track .testimonial-card {
                 width: 265px !important;
@@ -88,28 +239,16 @@
         </div>
     </section>
 
-    <!-- KEUNGGULAN BELANJA -->
-    <section class="features-section container reveal">
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">👕</div>
-                <h4>Bahan 100% Premium</h4>
-                <p>Menggunakan Cotton Combed & Fleece tebal yang adem, lembut, dan menyerap keringat.</p>
+    <!-- MOCKUP 3D INTERAKTIF (BEBAS TABRAKAN & UKURAN PROPORSIONAL) -->
+    <section class="box3d-showcase-section container reveal">
+        <div class="box3d-card">
+            <div class="box3d-header">
+                <span class="box3d-badge">📦 EXCLUSIVE 3D PACKAGING PREVIEW</span>
+                <h3>Packaging Eksklusif 8UR STORY</h3>
+                <p>Putar 360° dengan jari/mouse atau klik 2x untuk memperbesar detail kemasan premium kami.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">🎨</div>
-                <h4>Sablon & Cetak High-Res</h4>
-                <p>Teknologi DTF & Full Print modern menghasilkan warna tajam, detail presisi, elastis, dan anti luntur.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h4>Produksi Cepat 1-3 Hari</h4>
-                <p>Pengerjaan kilat dengan Quality Control ketat. Bisa pesan satuan tanpa minimum order.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🛡️</div>
-                <h4>Garansi Kepuasan 100%</h4>
-                <p>Jaminan ganti baru secara gratis jika terdapat cacat produksi atau kesalahan cetak dari tim kami.</p>
+            <div class="box3d-iframe-wrapper">
+                <iframe src="8UR_STORY_Box_3D.html" title="Mockup 3D Box 8UR STORY" loading="lazy" allowtransparency="true"></iframe>
             </div>
         </div>
     </section>
@@ -193,6 +332,32 @@
             </a>
         </div>
     </main>
+
+    <!-- KEUNGGULAN BELANJA (RAPAT DI BAWAH BAGIAN PRODUK) -->
+    <section class="features-section features-below-catalog container reveal">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">👕</div>
+                <h4>Bahan 100% Premium</h4>
+                <p>Menggunakan Cotton Combed & Fleece tebal yang adem, lembut, dan menyerap keringat.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h4>Sablon & Cetak High-Res</h4>
+                <p>Teknologi DTF & Full Print modern menghasilkan warna tajam, detail presisi, elastis, dan anti luntur.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h4>Produksi Cepat 1-3 Hari</h4>
+                <p>Pengerjaan kilat dengan Quality Control ketat. Bisa pesan satuan tanpa minimum order.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h4>Garansi Kepuasan 100%</h4>
+                <p>Jaminan ganti baru secara gratis jika terdapat cacat produksi atau kesalahan cetak dari tim kami.</p>
+            </div>
+        </div>
+    </section>
 
     <!-- TENTANG KAMI -->
     <section class="about-section reveal" id="tentang-kami">
