@@ -1,58 +1,51 @@
 /* ============================================================
-   8UR STORY — email-service.js (v3.1 FINAL - Full & Anti-Spam)
+   8UR STORY — email-service.js (v4.0 - Server Pribadi Google)
    Khusus menangani Email Otomatis & Download Invoice PDF
    ============================================================ */
 
-// 1. INISIALISASI EMAILJS
-(function() {
-    if (typeof emailjs !== 'undefined') {
-        emailjs.init("bs3EPXeXyVgvgJb2A"); 
-    }
-})();
+// 1. URL WEB APP GOOGLE APPS SCRIPT ANDA
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyfz_YBfqbgsiKUhs1bqQPzcS3KipAsxjH4coZq9qAE6fy6g03vj_RQzwN2Js9HuYOX6w/exec";
 
-// 2. FUNGSI KIRIM EMAIL (versi ringan: tanpa gambar, tanpa gradient, anti-spam)
-// Membersihkan teks varian agar tidak ada harga ganda, misal "S (46cm x 68cm) — Rp 99.000"
-function cleanVariant(text) {
-    return String(text || '-').replace(/\s*[—–-]\s*Rp\s*[\d.,]+\s*$/i, '').trim();
-}
-
+// 2. FUNGSI KIRIM EMAIL VIA GOOGLE SERVER (100% ANTI SPAM)
 function sendEmailInvoice(orderData) {
-    const serviceID  = "service_xzsw3fl";
-    const templateID = "template_klxhg3v";
+    // Merakit Tabel Produk E-Commerce dengan Badge CSS
+    let itemsHTML = `<table style="width: 100%; border-collapse: collapse; font-family: Arial, Helvetica, sans-serif;">`;
+    
+    orderData.items.forEach((item, idx) => {
+        const unitPrice = item.pricePerItem 
+            ? item.pricePerItem.toLocaleString('id-ID') 
+            : item.totalPrice.toLocaleString('id-ID');
 
-    if (typeof emailjs === 'undefined') {
-        console.error("Pustaka EmailJS belum termuat di halaman checkout.html");
-        return Promise.reject(new Error("EmailJS belum termuat"));
-    }
-    if (!orderData || !orderData.email || !/^\S+@\S+\.\S+$/.test(orderData.email)) {
-        console.error("Email pembeli tidak valid:", orderData && orderData.email);
-        return Promise.reject(new Error("Email pembeli tidak valid"));
-    }
-
-    // Tabel barang sederhana (tanpa badge, tanpa warna mencolok)
-    let itemsHTML = '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;">';
-
-    orderData.items.forEach((item) => {
-        const unitPrice = (item.pricePerItem || item.totalPrice).toLocaleString('id-ID');
         itemsHTML += `
-            <tr>
-                <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#222222;">
-                    ${item.product}<br>
-                    <span style="font-size:12px;color:#666666;">
-                        Warna: ${cleanVariant(item.color)}, Ukuran: ${cleanVariant(item.size)}<br>
-                        ${item.qty} x Rp ${unitPrice}
+            <tr style="border-bottom: 1px solid #E5E7EB;">
+                <td style="padding: 12px 10px 12px 0; width: 38px; vertical-align: top;">
+                    <div style="width: 34px; height: 34px; line-height: 34px; text-align: center; background-color: #FEF2F2; color: #E83124; border: 1px solid #FECACA; border-radius: 8px; font-weight: bold; font-size: 13px;">
+                        #${idx + 1}
+                    </div>
+                </td>
+                <td style="padding: 12px 0; font-size: 13.5px; color: #111827; vertical-align: top;">
+                    <strong style="display: block; margin-bottom: 3px; color: #111827;">${item.product}</strong>
+                    <span style="font-size: 11.5px; color: #6B7280; display: block;">
+                        Warna: ${item.color} | Ukuran: ${item.size}
+                    </span>
+                    <span style="font-size: 11px; color: #9CA3AF; display: block; margin-top: 2px;">
+                        Harga Satuan: Rp ${unitPrice} | File: ${item.designFile || 'Desain Default'}
                     </span>
                 </td>
-                <td align="right" valign="top" style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#222222;white-space:nowrap;">
+                <td style="padding: 12px 8px; text-align: center; font-size: 13px; font-weight: bold; color: #374151; vertical-align: top; white-space: nowrap;">
+                    x${item.qty}
+                </td>
+                <td style="padding: 12px 0; text-align: right; font-weight: 800; font-size: 13.5px; color: #E83124; vertical-align: top; white-space: nowrap;">
                     Rp ${item.totalPrice.toLocaleString('id-ID')}
                 </td>
-            </tr>`;
+            </tr>
+        `;
     });
-    itemsHTML += '</table>';
+    itemsHTML += `</table>`;
 
-    const templateParams = {
+    // Siapkan data (*payload*) untuk dikirim ke Google Apps Script
+    const payload = {
         to_email: orderData.email,
-        email: "cuanmoney291@gmail.com",
         buyer_name: orderData.name,
         order_id: orderData.orderId,
         order_date: orderData.date,
@@ -61,18 +54,28 @@ function sendEmailInvoice(orderData) {
         total_price: orderData.total.toLocaleString('id-ID')
     };
 
-    return emailjs.send(serviceID, templateID, templateParams)
-        .then((res) => {
-            console.log("Email invoice terkirim ke: " + orderData.email);
-            return res;
-        })
-        .catch((err) => {
-            console.error("GAGAL mengirim email:", err);
-            throw err;
-        });
+    // Mengirim HTTP POST langsung ke server Gmail (Mencegah blokir CORS)
+    fetch(GAS_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.status === "success") {
+            console.log("SUKSES! Email Invoice resmi terkirim ke: " + orderData.email);
+        } else {
+            console.error("Gagal mengirim email (GAS error):", result.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error saat menghubungi server Google:", error);
+    });
 }
 
-// 3. FUNGSI DOWNLOAD INVOICE PDF PROFESIONAL (ANTI-BLANK DI HP & LAPTOP)
+// 3. FUNGSI DOWNLOAD INVOICE PDF PROFESIONAL
 function downloadInvoicePDF(orderData) {
     if (!orderData) {
         alert("Data pesanan tidak ditemukan!");
@@ -104,7 +107,6 @@ function downloadInvoicePDF(orderData) {
         `;
     });
 
-    // Buat kontainer tersembunyi di luar layar tetapi dengan dimensi kertas tetap (700px)
     const wrapper = document.createElement('div');
     wrapper.style.position = 'fixed';
     wrapper.style.top = '0';
@@ -117,8 +119,6 @@ function downloadInvoicePDF(orderData) {
 
     wrapper.innerHTML = `
         <div id="pdf-print-area" style="width: 700px; padding: 40px; font-family: Arial, Helvetica, sans-serif; color: #111827; background-color: #FFFFFF; box-sizing: border-box;">
-            
-            <!-- HEADER INVOICE -->
             <table style="width: 100%; border-bottom: 3px solid #E83124; padding-bottom: 18px; margin-bottom: 24px;">
                 <tr>
                     <td style="vertical-align: top;">
@@ -139,7 +139,6 @@ function downloadInvoicePDF(orderData) {
                 </tr>
             </table>
 
-            <!-- INFO PELANGGAN -->
             <table style="width: 100%; margin-bottom: 24px; background-color: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 14px;">
                 <tr>
                     <td style="vertical-align: top; width: 60%;">
@@ -158,7 +157,6 @@ function downloadInvoicePDF(orderData) {
                 </tr>
             </table>
 
-            <!-- TABEL RINCIAN PRODUK -->
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; border: 1px solid #E5E7EB;">
                 <thead>
                     <tr style="background-color: #111827; color: #FFFFFF;">
@@ -173,7 +171,6 @@ function downloadInvoicePDF(orderData) {
                 </tbody>
             </table>
 
-            <!-- TOTAL HARGA -->
             <table style="width: 100%; margin-bottom: 35px;">
                 <tr>
                     <td style="width: 50%;"></td>
@@ -188,7 +185,6 @@ function downloadInvoicePDF(orderData) {
                 </tr>
             </table>
 
-            <!-- FOOTER RESMI -->
             <div style="border-top: 1px dashed #D1D5DB; padding-top: 16px; text-align: center;">
                 <div style="font-size: 12px; font-weight: bold; color: #111827;">Terima kasih telah berbelanja di 8UR STORY!</div>
                 <div style="font-size: 11px; color: #6B7280; margin-top: 4px;">
