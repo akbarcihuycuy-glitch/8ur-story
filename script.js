@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* Jeda 1,5 detik setelah halaman siap sebelum CS Lisa menyapa */
-    const startDelay = loader ? 2500 : 1500;
+    const startDelay = loader ? 1500 : 500;
     setTimeout(() => {
       delayReady = true;
       playWelcomeNow();
