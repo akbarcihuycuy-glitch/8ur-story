@@ -1,6 +1,6 @@
 /* ============================================================
-   8UR STORY — script.js  v5.0 FINAL
-   (HTML5 Audio Tag Preload + Unlock Terpisah + Auto Stop 10s)
+   8UR STORY — script.js  v5.1 FINAL
+   (Home-Only Welcome Delay 1.5s + 10s Voice + Tet-Tott Buzzer)
    ============================================================ */
 'use strict';
 
@@ -28,16 +28,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ══════════════════════════════════════════════════════════════
-     0B. VOICE OVER SAPAAN "SELAMAT DATANG" CS LISA (AUTO-PLAY PINTAR)
-  ══════════════════════════════════════════════════════════════ */
-  const isCheckoutOrCart =
-    document.querySelector('.checkout-page') !== null ||
-    document.querySelector('.cart-page') !== null ||
-    window.location.pathname.toLowerCase().includes('checkout') ||
-    window.location.pathname.toLowerCase().includes('cart');
+  /* ══════════════════════════════════════════════════════════════════
+     0B. VOICE OVER SAPAAN CS LISA (KHUSUS HOME + JEDA 1.5s + 1X SESI)
+  ══════════════════════════════════════════════════════════════════ */
+  const isHomePage = document.querySelector('.hero-section') !== null;
 
-  if (!isCheckoutOrCart) {
+  if (isHomePage && !sessionStorage.getItem('8ur_welcome_voiced')) {
     let welcomeEl = document.getElementById('vo-welcome');
     if (!welcomeEl) {
       welcomeEl = document.createElement('audio');
@@ -52,31 +48,63 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     let welcomePlayed = false;
+    let delayReady    = false;
+
+    function removeWelcomeListeners() {
+      ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
+        document.removeEventListener(evt, onFirstUserInteract, true);
+      });
+    }
 
     function playWelcomeNow() {
-      if (welcomePlayed) return;
+      if (welcomePlayed || sessionStorage.getItem('8ur_welcome_voiced')) return;
       welcomeEl.muted = false;
       welcomeEl.volume = 1.0;
       const p = welcomeEl.play();
       if (p !== undefined) {
         p.then(() => {
           welcomePlayed = true;
-          ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
-            document.removeEventListener(evt, playWelcomeNow, true);
-          });
+          sessionStorage.setItem('8ur_welcome_voiced', 'true');
+          removeWelcomeListeners();
         }).catch(() => {
-          /* Menunggu sentuhan/klik pertama yang diizinkan oleh browser */
+          /* Jika ditahan kebijakan Autoplay browser, akan otomatis menyala saat interaksi pertama */
         });
       }
     }
 
-    /* 1. Langsung coba putar saat halaman terbuka */
-    playWelcomeNow();
-    window.addEventListener('load', playWelcomeNow);
+    function onFirstUserInteract() {
+      if (welcomePlayed || sessionStorage.getItem('8ur_welcome_voiced')) {
+        removeWelcomeListeners();
+        return;
+      }
+      if (delayReady) {
+        playWelcomeNow();
+      } else {
+        /* Buka kunci audio secara senyap, lalu putar tepat saat jeda 1,5 detik selesai */
+        welcomeEl.muted = true;
+        const p = welcomeEl.play();
+        if (p !== undefined) {
+          p.then(() => {
+            welcomeEl.pause();
+            welcomeEl.currentTime = 0;
+            welcomeEl.muted = false;
+          }).catch(() => {
+            welcomeEl.muted = false;
+          });
+        }
+      }
+    }
 
-    /* 2. Jika ditahan kebijakan Autoplay Chrome/Safari, putar detik itu juga saat layar disentuh/diklik */
+    /* Jeda 1,5 detik setelah halaman siap sebelum CS Lisa menyapa */
+    const startDelay = loader ? 2500 : 1500;
+    setTimeout(() => {
+      delayReady = true;
+      playWelcomeNow();
+    }, startDelay);
+
+    /* Pengaman jika browser mewajibkan sentuhan/klik pertama */
     ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
-      document.addEventListener(evt, playWelcomeNow, { capture: true, passive: true });
+      document.addEventListener(evt, onFirstUserInteract, { capture: true, passive: true });
     });
   }
 
@@ -460,9 +488,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (checkoutBtn) checkoutBtn.addEventListener('click', () => window.location.href = 'checkout.html');
   }
 
-  /* ══════════════════════════════════════════════════════════════════
-     8. CHECKOUT PAGE + TIMER 1 MENIT + VOICE 10 DETIK + AUDIO SUKSES
-  ══════════════════════════════════════════════════════════════════ */
+  /* ════════════════════════════════════════════════════════════════════════
+     8. CHECKOUT PAGE + TIMER 1 MENIT + VOICE 10 DETIK + BUNYI "TET-TOTT!"
+  ════════════════════════════════════════════════════════════════════════ */
   const btnConfirm     = document.getElementById('btn-confirm-order');
   const paymentModal   = document.getElementById('payment-modal');
   const successModal   = document.getElementById('success-modal');
@@ -478,7 +506,6 @@ document.addEventListener('DOMContentLoaded', function () {
   let paymentTimerInterval = null;
   let remainingSeconds     = 60;
 
-  /* Ambil elemen <audio> fisik dari checkout.html (atau buat otomatis jika belum ada) */
   let paymentSuccessSound = document.getElementById('vo-success');
   if (!paymentSuccessSound) {
     paymentSuccessSound = document.createElement('audio');
@@ -513,7 +540,41 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (e) {}
   }
 
-  /* Fungsi Pembuka Kunci Audio (Masing-Masing Punya Status Sendiri agar 10 Detik Pasti Terbuka) */
+  /* Efek Suara Buzzer "Tet-Tott!" Saat Waktu Habis (00:00) */
+  function playTetTottBuzzer() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+
+      // Nada 1: "TET" (Pendek & Tegas)
+      const osc1  = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(340, now);
+      gain1.gain.setValueAtTime(0.18, now);
+      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.19);
+
+      // Nada 2: "TOTT" (Lebih Rendah & Panjang)
+      const osc2  = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sawtooth';
+      osc2.frequency.setValueAtTime(215, now + 0.23);
+      osc2.frequency.linearRampToValueAtTime(195, now + 0.72);
+      gain2.gain.setValueAtTime(0.22, now + 0.23);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.23);
+      osc2.stop(now + 0.76);
+    } catch (e) {}
+  }
+
   let unlockedSuccess = false;
   let unlockedTenSec  = false;
 
@@ -613,13 +674,12 @@ document.addEventListener('DOMContentLoaded', function () {
         countdownBox.classList.add('danger');
       }
 
-      /* Tepat di Detik ke-10: Putar Voice Over "10 detik" */
+      /* Tepat di Detik ke-10: Putar Voice Over "10 detik  ( waktu habis )" */
       if (remainingSeconds === 10) {
         tenSecWarningSound.muted = false;
         tenSecWarningSound.volume = 1.0;
         tenSecWarningSound.currentTime = 0;
         tenSecWarningSound.play().catch(() => {
-          /* Cadangan jika elemen utama gagal */
           const backup10s = new Audio('sound/10%20detik%20%20(%20waktu%20habis%20).MP3');
           backup10s.play().catch(() => {
             const backup10sSingle = new Audio('sound/10%20detik%20(%20waktu%20habis%20).MP3');
@@ -628,10 +688,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
       }
 
+      /* Tepat saat Waktu Habis (00:00): Hentikan suara 10s, bunyikan "Tet-Tott!", tampilkan Pop-Up Gagal */
       if (remainingSeconds <= 0) {
-        stopPaymentTimer(false); /* Jangan matikan suara jika masih selesai berbicara */
+        stopPaymentTimer(true);
         if (paymentModal) paymentModal.style.display = 'none';
         setStep(1, true);
+        playTetTottBuzzer();
         showToast('Waktu pembayaran 1 menit telah habis!', '⏰');
         if (failedModal) failedModal.style.display = 'flex';
       }
@@ -859,6 +921,12 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ════════════════════════════════════════════════════════════════
      10. SMART FLOATING CS (AGEN LISA + OTAK CONVERSATIONAL CERDAS)
   ════════════════════════════════════════════════════════════════ */
+  const isCheckoutOrCart =
+    document.querySelector('.checkout-page') !== null ||
+    document.querySelector('.cart-page') !== null ||
+    window.location.pathname.toLowerCase().includes('checkout') ||
+    window.location.pathname.toLowerCase().includes('cart');
+
   if (!isCheckoutOrCart && !document.getElementById('cs-widget-root')) {
 
     const csVectorIconSVG = `
