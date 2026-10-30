@@ -6,37 +6,44 @@
 // 1. URL WEB APP GOOGLE APPS SCRIPT ANDA
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyfz_YBfqbgsiKUhs1bqQPzcS3KipAsxjH4coZq9qAE6fy6g03vj_RQzwN2Js9HuYOX6w/exec";
 
-// 2. FUNGSI KIRIM EMAIL VIA SERVER GOOGLE (Apps Script)
+// 2. FUNGSI KIRIM EMAIL VIA GOOGLE SERVER (100% ANTI SPAM)
 function sendEmailInvoice(orderData) {
-    if (!orderData || !orderData.email || !/^\S+@\S+\.\S+$/.test(orderData.email)) {
-        console.error("Email pembeli tidak valid:", orderData && orderData.email);
-        if (typeof window.showToast === 'function') {
-            window.showToast('Email tidak valid, invoice tidak terkirim.', '⚠️');
-        }
-        return Promise.reject(new Error("Email pembeli tidak valid"));
-    }
+    // Merakit Tabel Produk E-Commerce dengan Badge CSS
+    let itemsHTML = `<table style="width: 100%; border-collapse: collapse; font-family: Arial, Helvetica, sans-serif;">`;
+    
+    orderData.items.forEach((item, idx) => {
+        const unitPrice = item.pricePerItem 
+            ? item.pricePerItem.toLocaleString('id-ID') 
+            : item.totalPrice.toLocaleString('id-ID');
 
-    // Tabel produk polos, selaras dengan template email yang sederhana
-    let itemsHTML = '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;">';
-
-    orderData.items.forEach((item) => {
-        const unitPrice = (item.pricePerItem || item.totalPrice).toLocaleString('id-ID');
         itemsHTML += `
-            <tr>
-                <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#222222;">
-                    ${item.product}<br>
-                    <span style="font-size:12px;color:#666666;">
-                        Warna: ${item.color}, Ukuran: ${item.size}<br>
-                        ${item.qty} x Rp ${unitPrice}
+            <tr style="border-bottom: 1px solid #E5E7EB;">
+                <td style="padding: 12px 10px 12px 0; width: 38px; vertical-align: top;">
+                    <div style="width: 34px; height: 34px; line-height: 34px; text-align: center; background-color: #FEF2F2; color: #E83124; border: 1px solid #FECACA; border-radius: 8px; font-weight: bold; font-size: 13px;">
+                        #${idx + 1}
+                    </div>
+                </td>
+                <td style="padding: 12px 0; font-size: 13.5px; color: #111827; vertical-align: top;">
+                    <strong style="display: block; margin-bottom: 3px; color: #111827;">${item.product}</strong>
+                    <span style="font-size: 11.5px; color: #6B7280; display: block;">
+                        Warna: ${item.color} | Ukuran: ${item.size}
+                    </span>
+                    <span style="font-size: 11px; color: #9CA3AF; display: block; margin-top: 2px;">
+                        Harga Satuan: Rp ${unitPrice} | File: ${item.designFile || 'Desain Default'}
                     </span>
                 </td>
-                <td align="right" valign="top" style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#222222;white-space:nowrap;">
+                <td style="padding: 12px 8px; text-align: center; font-size: 13px; font-weight: bold; color: #374151; vertical-align: top; white-space: nowrap;">
+                    x${item.qty}
+                </td>
+                <td style="padding: 12px 0; text-align: right; font-weight: 800; font-size: 13.5px; color: #E83124; vertical-align: top; white-space: nowrap;">
                     Rp ${item.totalPrice.toLocaleString('id-ID')}
                 </td>
-            </tr>`;
+            </tr>
+        `;
     });
-    itemsHTML += '</table>';
+    itemsHTML += `</table>`;
 
+    // Siapkan data (*payload*) untuk dikirim ke Google Apps Script
     const payload = {
         to_email: orderData.email,
         buyer_name: orderData.name,
@@ -47,30 +54,25 @@ function sendEmailInvoice(orderData) {
         total_price: orderData.total.toLocaleString('id-ID')
     };
 
-    return fetch(GAS_URL, {
+    // Mengirim HTTP POST langsung ke server Gmail (Mencegah blokir CORS)
+    fetch(GAS_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+        },
         body: JSON.stringify(payload)
     })
-        .then(response => response.json())
-        .then(result => {
-            if (result.status === "success") {
-                console.log("Email invoice terkirim ke: " + orderData.email);
-            } else {
-                console.error("Gagal mengirim email (GAS error):", result.message);
-                if (typeof window.showToast === 'function') {
-                    window.showToast('Invoice gagal dikirim, coba lagi nanti.', '⚠️');
-                }
-            }
-            return result;
-        })
-        .catch(error => {
-            console.error("Error saat menghubungi server Google:", error);
-            if (typeof window.showToast === 'function') {
-                window.showToast('Tidak bisa terhubung ke server email.', '⚠️');
-            }
-            throw error;
-        });
+    .then(response => response.json())
+    .then(result => {
+        if (result.status === "success") {
+            console.log("SUKSES! Email Invoice resmi terkirim ke: " + orderData.email);
+        } else {
+            console.error("Gagal mengirim email (GAS error):", result.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error saat menghubungi server Google:", error);
+    });
 }
 
 // 3. FUNGSI DOWNLOAD INVOICE PDF PROFESIONAL
