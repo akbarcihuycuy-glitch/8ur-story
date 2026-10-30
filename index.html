@@ -55,13 +55,15 @@
         }
         .box3d-card {
             position: relative;
-            border-radius: 24px;
+            max-width: 760px; /* Rasio ideal agar objek 3D tampil besar & tidak mengecil */
+            margin: 0 auto;
+            border-radius: 20px;
             overflow: hidden;
-            padding: 24px 20px 18px;
+            padding: 16px 16px 12px;
             background: linear-gradient(-45deg, #1a103c, #2d1b69, #4c1d95, #7f1d1d, #1e1b4b);
             background-size: 300% 300%;
             animation: cosmicGradientShift 12s ease infinite;
-            box-shadow: 0 22px 50px rgba(17, 24, 39, 0.22);
+            box-shadow: 0 14px 34px rgba(17, 24, 39, 0.16);
             border: 1.5px solid rgba(255, 255, 255, 0.16);
         }
         @keyframes cosmicGradientShift {
