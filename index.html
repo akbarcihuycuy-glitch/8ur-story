@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>8UR STORY - Custom T-Shirt & Streetwear</title>
     <link rel="icon" href="images/logo.png">
-    <link rel="stylesheet" href="style.css?v=2.6">
+    <link rel="stylesheet" href="style.css?v=5.0">
     <!-- Pengaman Ganda Animasi Auto-Slide Testimoni, Compact Header/Hero & Showcase 3D -->
     <style>
         /* ── 1. RAMPINGKAN HEADER PALING ATAS & HERO BANNER ── */
@@ -24,7 +24,7 @@
         }
         .hero-section {
             min-height: auto !important;
-            padding: 68px 20px 52px !important; /* Proporsional & tidak ketabrak */
+            padding: 68px 20px 52px !important;
         }
         .hero-content h1 {
             font-size: clamp(1.85rem, 3.6vw, 2.75rem) !important;
@@ -46,8 +46,8 @@
 
         /* ── 2. STYLING SHOWCASE MOCKUP 3D (ANTI-NABRAK & UKURAN PAS) ── */
         .box3d-showcase-section {
-            margin-top: 24px !important;    /* Jarak aman dari Hero Banner (tidak nabrak) */
-            margin-bottom: 18px !important; /* Rapat dengan Katalog Produk di bawahnya */
+            margin-top: 24px !important;
+            margin-bottom: 18px !important;
             padding-top: 0 !important;
             padding-bottom: 0 !important;
             position: relative;
@@ -55,7 +55,7 @@
         }
         .box3d-card {
             position: relative;
-            max-width: 760px; /* Rasio ideal agar objek 3D tampil besar & tidak mengecil */
+            max-width: 760px;
             margin: 0 auto;
             border-radius: 20px;
             overflow: hidden;
@@ -106,7 +106,7 @@
         }
         .box3d-iframe-wrapper {
             width: 100%;
-            height: 320px; /* Dikembalikan tepat 320px di Laptop */
+            height: 320px;
             border-radius: 14px;
             overflow: hidden;
             position: relative;
@@ -191,7 +191,7 @@
                 font-size: 11px;
             }
             .box3d-iframe-wrapper {
-                height: 260px; /* Dikembalikan tepat 260px di HP */
+                height: 260px;
             }
             .testimonials-track { gap: 14px; animation-duration: 55s !important; }
             .testimonials-track .testimonial-card {
@@ -205,6 +205,13 @@
 </head>
 <body>
     <div id="page-progress"></div>
+
+    <!-- ELEMEN AUDIO FISIK SAPAAN CS LISA (DIJAMIN TERMUAT OLEH BROWSER) -->
+    <audio id="vo-welcome" preload="auto" style="display:none;">
+        <source src="sound/selamat%20datang.MP3" type="audio/mpeg">
+        <source src="sound/selamat%20datang.mp3" type="audio/mpeg">
+        <source src="sound/selamat datang.MP3" type="audio/mpeg">
+    </audio>
 
     <!-- HEADER -->
     <header>
@@ -241,7 +248,7 @@
         </div>
     </section>
 
-    <!-- MOCKUP 3D INTERAKTIF (BEBAS TABRAKAN & UKURAN PROPORSIONAL) -->
+    <!-- MOCKUP 3D INTERAKTIF -->
     <section class="box3d-showcase-section container reveal">
         <div class="box3d-card">
             <div class="box3d-header">
@@ -335,7 +342,7 @@
         </div>
     </main>
 
-    <!-- KEUNGGULAN BELANJA (RAPAT DI BAWAH BAGIAN PRODUK) -->
+    <!-- KEUNGGULAN BELANJA -->
     <section class="features-section features-below-catalog container reveal">
         <div class="features-grid">
             <div class="feature-card">
@@ -418,7 +425,7 @@
         </div>
     </section>
 
-    <!-- TESTIMONI PELANGGAN (12 ULASAN AUTO-SLIDE KESAMPING) -->
+    <!-- TESTIMONI PELANGGAN -->
     <section class="testimonials-section reveal">
         <div class="container" style="padding-bottom: 10px;">
             <h2 class="section-title">Apa Kata Mereka?</h2>
@@ -595,6 +602,6 @@
             <p>&copy; 2026 8UR STORY Official. All Rights Reserved.</p>
         </div>
     </footer>
-    <script src="script.js?v=2.6"></script>
+    <script src="script.js?v=5.0"></script>
 </body>
 </html>
