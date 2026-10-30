@@ -5,13 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout — 8UR STORY</title>
   <link rel="icon" href="images/logo.png">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=5.0">
 
-  <!-- Pustaka External untuk EmailJS & Cetak PDF Invoice -->
+  <!-- Pustaka External untuk Cetak PDF Invoice -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <div id="page-progress"></div>
+
+<!-- ELEMEN AUDIO FISIK CHECKOUT (MENANGANI SPASI 1 ATAU 2 & HURUF BESAR/KECIL OTOMATIS) -->
+<audio id="vo-10sec" preload="auto" style="display:none;">
+  <source src="sound/10%20detik%20%20(%20waktu%20habis%20).MP3" type="audio/mpeg">
+  <source src="sound/10%20detik%20(%20waktu%20habis%20).MP3" type="audio/mpeg">
+  <source src="sound/10%20detik%20%20(%20waktu%20habis%20).mp3" type="audio/mpeg">
+  <source src="sound/10%20detik%20(%20waktu%20habis%20).mp3" type="audio/mpeg">
+  <source src="sound/10 detik.MP3" type="audio/mpeg">
+  <source src="sound/10 detik.MP3" type="audio/mpeg">
+</audio>
+
+<audio id="vo-success" preload="auto" style="display:none;">
+  <source src="sound/pembayaran%20diterima.MP3" type="audio/mpeg">
+  <source src="sound/pembayaran%20diterima.mp3" type="audio/mpeg">
+  <source src="sound/pembayaran diterima.MP3" type="audio/mpeg">
+</audio>
 
 <header>
   <div class="logo-container">
@@ -59,7 +75,7 @@
       <p style="color:var(--muted);font-size:13.5px">Memuat data pesanan...</p>
     </div>
 
-    <!-- ORDER FORM (Dengan Watermark Logo 8UR STORY & Efek Kaca Buram) -->
+    <!-- ORDER FORM -->
     <div class="order-form">
 
       <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:20px">📍 Data Pengiriman Penerima</h3>
@@ -72,7 +88,6 @@
         <input type="tel" id="buyer-phone" placeholder=" " required>
         <label>Nomor WhatsApp Aktif (Contoh: 08123456789)</label>
       </div>
-      <!-- KOLOM ALAMAT EMAIL UNTUK INVOICE OTOMATIS -->
       <div class="floating-group">
         <input type="email" id="buyer-email" placeholder=" " required>
         <label>Alamat Email Aktif </label>
@@ -158,7 +173,7 @@
   </div>
 </div>
 
-<!-- POP UP 2: Pembayaran Diterima (Sukses + Audio + Unduh Invoice PDF) -->
+<!-- POP UP 2: Pembayaran Diterima -->
 <div class="modal-overlay" id="success-modal">
   <div class="modal-content" style="text-align:center;max-width:450px">
     <div style="font-size:4rem;margin-bottom:14px;animation:fadeInUp .5s ease both">✅</div>
@@ -171,7 +186,6 @@
       Terima kasih telah berbelanja di <strong>8UR STORY</strong>! Struk <strong>Invoice resmi telah dikirim otomatis ke Email Anda</strong>.<br><br>
       Tim admin kami juga akan menghubungi Anda via WhatsApp untuk konfirmasi pesanan (diproses <strong>1-3 hari kerja</strong>).
     </p>
-    <!-- TOMBOL UNDUH INVOICE PDF -->
     <button type="button" class="btn-secondary-dark" onclick="if(window.currentOrderData){downloadInvoicePDF(window.currentOrderData)}" style="width:100%;margin-bottom:10px;font-size:14px;">
       📄 Unduh Invoice (PDF)
     </button>
@@ -179,7 +193,7 @@
   </div>
 </div>
 
-<!-- POP UP 3: Waktu Habis / Pembayaran Gagal (Pengganti Saat Telat 1 Menit) -->
+<!-- POP UP 3: Waktu Habis -->
 <div class="modal-overlay" id="failed-modal">
   <div class="modal-content" style="text-align:center;max-width:440px">
     <div class="failed-icon-anim">❌</div>
@@ -205,7 +219,7 @@
 </div>
 
 <!-- Memuat email-service.js terlebih dahulu, baru script.js -->
-<script src="email-service.js"></script>
-<script src="script.js"></script>
+<script src="email-service.js?v=5.0"></script>
+<script src="script.js?v=5.0"></script>
 </body>
 </html>
