@@ -62,59 +62,47 @@ document.addEventListener('DOMContentLoaded', function () {
   const isHomePage = document.querySelector('.hero-section') !== null;
 
   if (isHomePage && !sessionStorage.getItem('8ur_welcome_voiced')) {
-    const audioSrc = 'sound/selamat%20datang.MP3';
-    let welcomeEl = document.getElementById('vo-welcome');
-    if (!welcomeEl) {
-      welcomeEl = new Audio(audioSrc);
-      welcomeEl.preload = 'auto';
+    const welcomeEl = document.getElementById('vo-welcome') || new Audio('sound/selamat%20datang.MP3');
+    welcomeEl.preload = 'auto';
+    welcomeEl.muted = false;
+    welcomeEl.volume = 1.0;
+
+    let welcomeDone = false;
+    let welcomeTrying = false;
+
+    /* Event "kuat" = dianggap interaksi sungguhan oleh Chrome/Safari (pasti berhasil).
+       Event "lemah" (scroll/mousemove/touchmove) tetap dicoba, tapi hanya berhasil
+       kalau browser/situs sudah punya izin autoplay. */
+    const WELCOME_EVENTS = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown',
+                            'wheel', 'scroll', 'mousemove', 'touchmove'];
+
+    function finishWelcome() {
+      if (welcomeDone) return;
+      welcomeDone = true;
+      sessionStorage.setItem('8ur_welcome_voiced', 'true'); /* hanya 1x per sesi */
+      WELCOME_EVENTS.forEach(evt => window.removeEventListener(evt, tryPlayWelcome, true));
     }
-    welcomeEl.autoplay = true;
 
-    let welcomePlayed = false;
-
-    function markAsPlayed() {
-      welcomePlayed = true;
-      sessionStorage.setItem('8ur_welcome_voiced', 'true');
-      ['pointerdown', 'touchstart', 'touchmove', 'mousemove', 'wheel', 'scroll', 'keydown', 'click'].forEach(evt => {
-        window.removeEventListener(evt, forcePlayWelcome, true);
-      });
-    }
-
-    function forcePlayWelcome() {
-      if (welcomePlayed || sessionStorage.getItem('8ur_welcome_voiced')) return;
-
-      /* Percobaan 1: Langsung putar bersuara penuh */
-      welcomeEl.muted = false;
+    function tryPlayWelcome() {
+      if (welcomeDone || welcomeTrying || !welcomeEl.paused) return;
+      welcomeTrying = true;
+      welcomeEl.muted = false;   /* JANGAN pernah diputar muted: itu membuat sapaan "terpakai" tanpa suara */
       welcomeEl.volume = 1.0;
-      const playAttempt = welcomeEl.play();
-
-      if (playAttempt !== undefined) {
-        playAttempt.then(() => {
-          markAsPlayed();
-        }).catch(() => {
-          /* Percobaan 2 (Trik Bypass): Putar dalam keadaan Muted dulu (diizinkan browser), lalu Unmute paksa */
-          welcomeEl.muted = true;
-          welcomeEl.play().then(() => {
-            setTimeout(() => {
-              welcomeEl.muted = false;
-              welcomeEl.volume = 1.0;
-              if (!welcomeEl.paused) {
-                markAsPlayed();
-              }
-            }, 80);
-          }).catch(() => {
-            /* Jika sistem OS HP mengunci keras, akan langsung menyala begitu jari menyentuh/menggeser layar */
-          });
-        });
+      const p = welcomeEl.play();
+      if (p && typeof p.then === 'function') {
+        p.then(() => { welcomeTrying = false; finishWelcome(); })   /* sukses BERSUARA -> tandai sudah diputar */
+         .catch(() => { welcomeTrying = false; });                  /* diblokir -> biarkan listener tetap aktif */
+      } else {
+        welcomeTrying = false;
       }
     }
 
-    /* Jalankan otomatis tepat 0.5 detik (500ms) setelah halaman dibuka */
-    setTimeout(forcePlayWelcome, 500);
+    /* Coba autoplay dulu 0.5 detik setelah halaman dibuka */
+    setTimeout(tryPlayWelcome, 500);
 
-    /* Pemicu cadangan super sensitif (termasuk gerakan mouse / geser layar) */
-    ['pointerdown', 'touchstart', 'touchmove', 'mousemove', 'wheel', 'scroll', 'keydown', 'click'].forEach(evt => {
-      window.addEventListener(evt, forcePlayWelcome, { capture: true, passive: true });
+    /* Kalau diblokir, tunggu gerakan/sentuhan pertama */
+    WELCOME_EVENTS.forEach(evt => {
+      window.addEventListener(evt, tryPlayWelcome, { capture: true, passive: true });
     });
   }
 
