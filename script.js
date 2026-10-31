@@ -76,14 +76,39 @@ document.addEventListener('DOMContentLoaded', function () {
     const WELCOME_EVENTS = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown',
                             'wheel', 'scroll', 'mousemove', 'touchmove'];
 
+    /* Layar "Ketuk untuk masuk" - muncul HANYA jika autoplay diblokir browser */
+    let welcomeGate = null;
+    function showWelcomeGate() {
+      if (welcomeDone || welcomeGate) return;
+      welcomeGate = document.createElement('div');
+      welcomeGate.setAttribute('role', 'button');
+      welcomeGate.style.cssText =
+        'position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;' +
+        'align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;' +
+        'background:linear-gradient(135deg,#a82a6e,#5b24b8);color:#fff;cursor:pointer;' +
+        'touch-action:none;font-family:Poppins,system-ui,sans-serif;';
+      welcomeGate.innerHTML =
+        '<div style="font-size:56px;line-height:1">\uD83D\uDD0A</div>' +
+        '<div style="font-size:26px;font-weight:800">Selamat Datang di 8UR STORY</div>' +
+        '<div style="font-size:16px;opacity:.9">Ketuk layar untuk masuk</div>';
+      document.body.appendChild(welcomeGate);
+    }
+
     function finishWelcome() {
       if (welcomeDone) return;
       welcomeDone = true;
+      if (welcomeGate) {
+        const g = welcomeGate;
+        g.style.transition = 'opacity .4s';
+        g.style.opacity = '0';
+        setTimeout(() => g.remove(), 450);
+        welcomeGate = null;
+      }
       sessionStorage.setItem('8ur_welcome_voiced', 'true'); /* hanya 1x per sesi */
       WELCOME_EVENTS.forEach(evt => window.removeEventListener(evt, tryPlayWelcome, true));
     }
 
-    function tryPlayWelcome() {
+    function tryPlayWelcome(e) {
       if (welcomeDone || welcomeTrying || !welcomeEl.paused) return;
       welcomeTrying = true;
       welcomeEl.muted = false;   /* JANGAN pernah diputar muted: itu membuat sapaan "terpakai" tanpa suara */
@@ -91,14 +116,17 @@ document.addEventListener('DOMContentLoaded', function () {
       const p = welcomeEl.play();
       if (p && typeof p.then === 'function') {
         p.then(() => { welcomeTrying = false; finishWelcome(); })   /* sukses BERSUARA -> tandai sudah diputar */
-         .catch(() => { welcomeTrying = false; });                  /* diblokir -> biarkan listener tetap aktif */
+         .catch(() => {                                             /* diblokir -> tampilkan layar ketuk + listener tetap aktif */
+           welcomeTrying = false;
+           if (!e || e.type === undefined) showWelcomeGate();
+         });
       } else {
         welcomeTrying = false;
       }
     }
 
     /* Coba autoplay dulu 0.5 detik setelah halaman dibuka */
-    setTimeout(tryPlayWelcome, 500);
+    setTimeout(() => tryPlayWelcome(), 500);
 
     /* Kalau diblokir, tunggu gerakan/sentuhan pertama */
     WELCOME_EVENTS.forEach(evt => {
