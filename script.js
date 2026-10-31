@@ -4,16 +4,6 @@
    ============================================================ */
 'use strict';
 
-/* ── AUTO CLEAN URL (HAPUS .HTML SEPERTI MARKETPLACE) ── */
-  if (window.location.protocol !== 'file:') {
-    const cleanPath = window.location.pathname
-      .replace(/\/index\.html$/i, '/')
-      .replace(/\.html$/i, '');
-    if (cleanPath !== window.location.pathname) {
-      window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
-    }
-  }
-
 document.addEventListener('DOMContentLoaded', function () {
 
   /* ══════════════════════════════════════════════════════════════
