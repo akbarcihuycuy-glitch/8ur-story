@@ -28,83 +28,65 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ══════════════════════════════════════════════════════════════════
-     0B. VOICE OVER SAPAAN CS LISA (KHUSUS HOME + JEDA 1.5s + 1X SESI)
+ /* ══════════════════════════════════════════════════════════════════
+     0B. VOICE OVER SAPAAN CS LISA (AGGRESSIVE AUTOPLAY 0.5 DETIK)
   ══════════════════════════════════════════════════════════════════ */
   const isHomePage = document.querySelector('.hero-section') !== null;
 
   if (isHomePage && !sessionStorage.getItem('8ur_welcome_voiced')) {
+    const audioSrc = 'sound/selamat%20datang.MP3';
     let welcomeEl = document.getElementById('vo-welcome');
     if (!welcomeEl) {
-      welcomeEl = document.createElement('audio');
-      welcomeEl.id = 'vo-welcome';
+      welcomeEl = new Audio(audioSrc);
       welcomeEl.preload = 'auto';
-      welcomeEl.innerHTML = `
-        <source src="sound/selamat%20datang.MP3" type="audio/mpeg">
-        <source src="sound/selamat%20datang.mp3" type="audio/mpeg">
-        <source src="sound/selamat datang.MP3" type="audio/mpeg">
-      `;
-      document.body.appendChild(welcomeEl);
     }
+    welcomeEl.autoplay = true;
 
     let welcomePlayed = false;
-    let delayReady    = false;
 
-    function removeWelcomeListeners() {
-      ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
-        document.removeEventListener(evt, onFirstUserInteract, true);
+    function markAsPlayed() {
+      welcomePlayed = true;
+      sessionStorage.setItem('8ur_welcome_voiced', 'true');
+      ['pointerdown', 'touchstart', 'touchmove', 'mousemove', 'wheel', 'scroll', 'keydown', 'click'].forEach(evt => {
+        window.removeEventListener(evt, forcePlayWelcome, true);
       });
     }
 
-    function playWelcomeNow() {
+    function forcePlayWelcome() {
       if (welcomePlayed || sessionStorage.getItem('8ur_welcome_voiced')) return;
+
+      /* Percobaan 1: Langsung putar bersuara penuh */
       welcomeEl.muted = false;
       welcomeEl.volume = 1.0;
-      const p = welcomeEl.play();
-      if (p !== undefined) {
-        p.then(() => {
-          welcomePlayed = true;
-          sessionStorage.setItem('8ur_welcome_voiced', 'true');
-          removeWelcomeListeners();
+      const playAttempt = welcomeEl.play();
+
+      if (playAttempt !== undefined) {
+        playAttempt.then(() => {
+          markAsPlayed();
         }).catch(() => {
-          /* Jika ditahan kebijakan Autoplay browser, akan otomatis menyala saat interaksi pertama */
+          /* Percobaan 2 (Trik Bypass): Putar dalam keadaan Muted dulu (diizinkan browser), lalu Unmute paksa */
+          welcomeEl.muted = true;
+          welcomeEl.play().then(() => {
+            setTimeout(() => {
+              welcomeEl.muted = false;
+              welcomeEl.volume = 1.0;
+              if (!welcomeEl.paused) {
+                markAsPlayed();
+              }
+            }, 80);
+          }).catch(() => {
+            /* Jika sistem OS HP mengunci keras, akan langsung menyala begitu jari menyentuh/menggeser layar */
+          });
         });
       }
     }
 
-    function onFirstUserInteract() {
-      if (welcomePlayed || sessionStorage.getItem('8ur_welcome_voiced')) {
-        removeWelcomeListeners();
-        return;
-      }
-      if (delayReady) {
-        playWelcomeNow();
-      } else {
-        /* Buka kunci audio secara senyap, lalu putar tepat saat jeda 1,5 detik selesai */
-        welcomeEl.muted = true;
-        const p = welcomeEl.play();
-        if (p !== undefined) {
-          p.then(() => {
-            welcomeEl.pause();
-            welcomeEl.currentTime = 0;
-            welcomeEl.muted = false;
-          }).catch(() => {
-            welcomeEl.muted = false;
-          });
-        }
-      }
-    }
+    /* Jalankan otomatis tepat 0.5 detik (500ms) setelah halaman dibuka */
+    setTimeout(forcePlayWelcome, 500);
 
-    /* Jeda 1,5 detik setelah halaman siap sebelum CS Lisa menyapa */
-    const startDelay = loader ? 1500 : 500;
-    setTimeout(() => {
-      delayReady = true;
-      playWelcomeNow();
-    }, startDelay);
-
-    /* Pengaman jika browser mewajibkan sentuhan/klik pertama */
-    ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
-      document.addEventListener(evt, onFirstUserInteract, { capture: true, passive: true });
+    /* Pemicu cadangan super sensitif (termasuk gerakan mouse / geser layar) */
+    ['pointerdown', 'touchstart', 'touchmove', 'mousemove', 'wheel', 'scroll', 'keydown', 'click'].forEach(evt => {
+      window.addEventListener(evt, forcePlayWelcome, { capture: true, passive: true });
     });
   }
 
