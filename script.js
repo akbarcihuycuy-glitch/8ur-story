@@ -16,6 +16,34 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
+  /* ══════════════════════════════════════════════════════════════
+     0A. AUTO CLEAN URL (HILANGKAN .HTML SEPERTI MARKETPLACE)
+  ══════════════════════════════════════════════════════════════ */
+  if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+    // 1. Bersihkan URL di address bar saat halaman terbuka
+    const currentPath = window.location.pathname;
+    if (currentPath.endsWith('/index.html')) {
+      const newUrl = currentPath.slice(0, -10) + window.location.search + window.location.hash;
+      window.history.replaceState(null, '', newUrl || '/');
+    } else if (currentPath.endsWith('.html')) {
+      const newUrl = currentPath.slice(0, -5) + window.location.search + window.location.hash;
+      window.history.replaceState(null, '', newUrl);
+    }
+
+    // 2. Ubah semua link <a href="...html"> secara otomatis saat website tampil di Render
+    document.querySelectorAll('a[href]').forEach(link => {
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('http') || href.startsWith('#')) return;
+      if (href === 'index.html') {
+        link.setAttribute('href', '/');
+      } else if (href.startsWith('index.html#')) {
+        link.setAttribute('href', '/' + href.substring(10));
+      } else if (href.endsWith('.html')) {
+        link.setAttribute('href', '/' + href.slice(0, -5));
+      }
+    });
+  }
+
   /* ══════════════════════════════════════
      0. LOADING SCREEN & SCROLL PROGRESS
   ══════════════════════════════════════ */
