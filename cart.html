@@ -2,15 +2,407 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <!-- Baris wajib agar tampilan Keranjang pas di layar HP dan tidak kecil seperti Laptop -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keranjang - 8UR STORY</title>
+    <title>Keranjang Belanja — 8UR STORY</title>
     <link rel="icon" href="images/logo.png">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=5.0">
+    <style>
+        /* ── UPGRADE TAMPILAN KERANJANG E-COMMERCE PREMIUM ── */
+        .cart-upgrade-wrapper {
+            max-width: 1140px;
+            margin: 28px auto 60px;
+            padding: 0 20px;
+        }
+
+        /* 1. Progress Steps di Atas Keranjang */
+        .cart-steps-bar {
+            max-width: 520px;
+            margin: 0 auto 26px;
+        }
+
+        /* 2. Banner Progress Gratis Ongkir & Bonus Sticker */
+        .free-shipping-banner {
+            background: linear-gradient(135deg, #111827 0%, #1F2937 60%, #7F1D1D 100%);
+            color: #FFFFFF;
+            padding: 16px 22px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 12px 30px rgba(17, 24, 39, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+        .free-shipping-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-size: 13.5px;
+        }
+        .free-shipping-badge {
+            background: rgba(255, 216, 74, 0.18);
+            color: #FFD84A;
+            border: 1px solid rgba(255, 216, 74, 0.4);
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .shipping-progress-track {
+            width: 100%;
+            height: 9px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            overflow: hidden;
+        }
+        .shipping-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #E83124, #F59E0B, #10B981);
+            border-radius: 50px;
+            transition: width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        /* 3. Grid 2 Kolom (Daftar Item Kiri + Ringkasan Kanan) */
+        .cart-layout-grid {
+            display: grid;
+            grid-template-columns: 1.65fr 1fr;
+            gap: 26px;
+            align-items: start;
+        }
+
+        /* Override .cart-page bawaan agar menyatu dengan grid */
+        .cart-page.cart-main-box {
+            margin: 0 !important;
+            max-width: 100% !important;
+            padding: 28px !important;
+            position: relative;
+            overflow: hidden;
+            background: var(--white);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+        .cart-page.cart-main-box::before {
+            content: "";
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 75%;
+            height: 75%;
+            background-image: url('images/logo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .cart-box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-bottom: 16px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #F3F4F6;
+            position: relative;
+            z-index: 1;
+        }
+        .cart-box-header h2 {
+            margin: 0 !important;
+            font-size: 1.35rem !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .cart-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-cart-util {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 7px 14px;
+            border-radius: 50px;
+            border: 1.5px solid var(--border);
+            background: #F9FAFB;
+            color: var(--mid);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-cart-util:hover {
+            border-color: var(--red);
+            color: var(--red);
+            background: #FEF2F2;
+            transform: translateY(-1px);
+        }
+
+        /* Styling Kartu Item Keranjang Lebih Elegan */
+        #cart-items-container {
+            position: relative;
+            z-index: 1;
+        }
+        #cart-items-container .cart-item {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid #E5E7EB;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        #cart-items-container .cart-item:hover {
+            border-color: #FCA5A5;
+            box-shadow: 0 10px 24px rgba(232, 49, 36, 0.08);
+            transform: translateY(-2px);
+        }
+
+        /* 4. Kolom Kanan: Ringkasan Belanja & Voucher */
+        .cart-summary-sidebar {
+            background: var(--white);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 26px;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 86px;
+        }
+        .cart-summary-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--dark);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            border-bottom: 1.5px solid #F3F4F6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Kotak Input Kode Promo */
+        .promo-box {
+            background: #F9FAFB;
+            border: 1.5px dashed #D1D5DB;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 18px;
+        }
+        .promo-label {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .promo-tag-hint {
+            background: #FEE2E2;
+            color: var(--red);
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-size: 10px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .promo-tag-hint:hover {
+            background: var(--red);
+            color: #FFF;
+        }
+        .promo-input-row {
+            display: flex;
+            gap: 8px;
+        }
+        .promo-input-row input {
+            flex: 1;
+            padding: 9px 12px;
+            font-size: 12.5px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        .btn-apply-promo {
+            background: var(--dark);
+            color: #FFF;
+            border: none;
+            padding: 0 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-apply-promo:hover {
+            background: var(--red);
+        }
+        .promo-status-msg {
+            font-size: 11.5px;
+            margin-top: 6px;
+            font-weight: 600;
+            display: none;
+        }
+
+        /* Rincian Angka Ringkasan */
+        .summary-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--mid);
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1.5px dashed var(--border);
+        }
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .summary-line.free-tag span:last-child {
+            color: var(--success);
+            font-weight: 800;
+            background: #ECFDF5;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11.5px;
+        }
+        .summary-total-box {
+            margin-bottom: 18px;
+        }
+        #cart-total {
+            font-size: 1.35rem !important;
+            font-weight: 900 !important;
+            color: var(--red) !important;
+            margin: 0 !important;
+            text-align: right;
+        }
+
+        /* Trust Badges di Bawah Tombol Checkout */
+        .cart-trust-mini {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid #F3F4F6;
+            text-align: center;
+        }
+        .cart-trust-item {
+            background: #F9FAFB;
+            padding: 8px 6px;
+            border-radius: 10px;
+            border: 1px solid #F3F4F6;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--mid);
+        }
+        .cart-trust-item span {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        /* 5. Rekomendasi Produk Pelengkap (Cross-Sell) */
+        .upsell-section {
+            margin-top: 46px;
+        }
+        .upsell-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .upsell-header h3 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--dark);
+        }
+        .upsell-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+        .upsell-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.25s ease;
+        }
+        .upsell-card:hover {
+            border-color: var(--red);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+        .upsell-card img {
+            width: 74px;
+            height: 74px;
+            object-fit: contain;
+            background: #F9FAFB;
+            border-radius: 12px;
+            padding: 6px;
+            border: 1px solid #F3F4F6;
+            flex-shrink: 0;
+        }
+        .upsell-info h4 {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 3px;
+        }
+        .upsell-info .upsell-price {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--red);
+            margin-bottom: 6px;
+        }
+        .upsell-link {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--dark);
+            background: #F3F4F6;
+            padding: 4px 10px;
+            border-radius: 50px;
+            display: inline-block;
+            transition: 0.2s;
+        }
+        .upsell-card:hover .upsell-link {
+            background: var(--red);
+            color: #FFF;
+        }
+
+        @media (max-width: 860px) {
+            .cart-layout-grid {
+                grid-template-columns: 1fr;
+            }
+            .cart-summary-sidebar {
+                position: static;
+            }
+            .upsell-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <div id="page-progress"></div>
 
+    <!-- HEADER -->
     <header>
         <div class="logo-container">
             <a href="index.html"><img src="images/logo.png" alt="8UR STORY" class="logo"></a>
@@ -28,17 +420,280 @@
         </div>
     </header>
 
-    <main class="cart-page reveal">
-        <h2>Keranjang Belanja Anda</h2>
-        <div id="cart-items-container">
-            <!-- Item keranjang akan dimunculkan oleh JavaScript di sini -->
-        </div>
-        <div style="text-align: right; margin-top: 24px;">
-            <h3 id="cart-total" style="font-size: 20px; color: var(--red); margin-bottom: 14px;">Total: Rp 0</h3>
-            <button class="btn-primary" id="btn-checkout" style="width: 100%; max-width: 260px;">Lanjut ke Checkout &rarr;</button>
-        </div>
-    </main>
+    <div class="cart-upgrade-wrapper reveal">
 
-    <script src="script.js"></script>
+        <!-- 1. INDIKATOR TAHAP BELANJA -->
+        <div class="cart-steps-bar">
+            <div class="checkout-steps" style="margin-bottom: 10px;">
+                <div class="checkout-step-item active">
+                    <div class="step-circle">🛒</div>
+                    <div class="step-label">1. Keranjang</div>
+                </div>
+                <div class="checkout-step-item">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">2. Pengiriman &amp; Bayar</div>
+                </div>
+                <div class="checkout-step-item">
+                    <div class="step-circle">✓</div>
+                    <div class="step-label">3. Selesai</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. PROGRESS BAR GRATIS KEMASAN EKSKLUSIF & ONGKIR -->
+        <div class="free-shipping-banner" id="free-shipping-banner">
+            <div class="free-shipping-top">
+                <span id="shipping-status-text">🚚 Yuk tambah belanjaanmu untuk klaim <strong>Gratis Box 3D Eksklusif &amp; Sticker Pack!</strong></span>
+                <span class="free-shipping-badge" id="shipping-percent-badge">0%</span>
+            </div>
+            <div class="shipping-progress-track">
+                <div class="shipping-progress-fill" id="shipping-progress-fill"></div>
+            </div>
+        </div>
+
+        <!-- 3. LAYOUT UTAMA 2 KOLOM -->
+        <div class="cart-layout-grid">
+
+            <!-- KOLOM KIRI: DAFTAR PRODUK DI KERANJANG -->
+            <main class="cart-page cart-main-box">
+                <div class="cart-box-header">
+                    <h2>🛍️ Keranjang Belanja Anda</h2>
+                    <div class="cart-header-actions">
+                        <a href="index.html#katalog" class="btn-cart-util">&larr; Tambah Produk</a>
+                        <button type="button" class="btn-cart-util" id="btn-clear-all-cart">🗑️ Kosongkan</button>
+                    </div>
+                </div>
+
+                <div id="cart-items-container">
+                    <!-- Item keranjang akan dimunculkan oleh script.js di sini -->
+                </div>
+            </main>
+
+            <!-- KOLOM KANAN: RINGKASAN PESANAN, VOUCHER & TOMBOL CHECKOUT -->
+            <aside class="cart-summary-sidebar">
+                <div class="cart-summary-title">
+                    <span>📋 Ringkasan Belanja</span>
+                    <span style="font-size: 11.5px; color: var(--success); font-weight: 700;">● Ready Stock</span>
+                </div>
+
+                <!-- FITUR VOUCHER / KODE PROMO -->
+                <div class="promo-box">
+                    <div class="promo-label">
+                        <span>🎟️ Punya Kode Promo?</span>
+                        <span class="promo-tag-hint" id=" copy-promo-chip" onclick="applyQuickPromo('8URVIP')" title="Klik untuk pakai kode">Pakai: 8URVIP</span>
+                    </div>
+                    <div class="promo-input-row">
+                        <input type="text" id="promo-code-input" placeholder="Ketik kode promo...">
+                        <button type="button" class="btn-apply-promo" id="btn-apply-promo">Pakai</button>
+                    </div>
+                    <div class="promo-status-msg" id="promo-status-msg"></div>
+                </div>
+
+                <div class="summary-lines">
+                    <div class="summary-line">
+                        <span>Total Item Dipilih</span>
+                        <strong id="summary-item-count">0 pcs</strong>
+                    </div>
+                    <div class="summary-line free-tag">
+                        <span>Biaya Cetak &amp; Penanganan</span>
+                        <span>GRATIS</span>
+                    </div>
+                    <div class="summary-line free-tag">
+                        <span>Bonus Sticker Pack 8UR STORY</span>
+                        <span id="bonus-sticker-status">TERMASUK ✓</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Estimasi Produksi</span>
+                        <strong style="color: var(--dark);">1 – 3 Hari Kerja</strong>
+                    </div>
+                </div>
+
+                <div class="summary-total-box">
+                    <h3 id="cart-total">Total Tagihan: Rp 0</h3>
+                    <p style="font-size: 11px; color: var(--muted); text-align: right; margin-top: 4px;">
+                        Sudah termasuk garansi kualitas sablon 100%
+                    </p>
+                </div>
+
+                <button class="btn-primary" id="btn-checkout" style="width: 100%; padding: 15px; font-size: 15px;">
+                    Lanjut ke Checkout &rarr;
+                </button>
+
+                <!-- TRUST BADGES MINI -->
+                <div class="cart-trust-mini">
+                    <div class="cart-trust-item">
+                        <span>🛡️</span>
+                        Garansi 100% Ganti Baru
+                    </div>
+                    <div class="cart-trust-item">
+                        <span>⚡</span>
+                        Proses Kilat 1-3 Hari
+                    </div>
+                    <div class="cart-trust-item">
+                        <span>🔒</span>
+                        QRIS &amp; Bank Resmi
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+
+        <!-- 4. REKOMENDASI PRODUK PELENGKAP (CROSS-SELL) -->
+        <section class="upsell-section">
+            <div class="upsell-header">
+                <h3>🔥 Lengkapi Gaya Streetwear Kamu</h3>
+                <a href="index.html#katalog" style="font-size: 12.5px; font-weight: 700; color: var(--red);">Lihat Semua Katalog &rarr;</a>
+            </div>
+            <div class="upsell-grid">
+                <a href="product-topi.html" class="upsell-card">
+                    <img src="images/topi.png" alt="Topi Baseball Custom">
+                    <div class="upsell-info">
+                        <h4>Topi Baseball Custom</h4>
+                        <div class="upsell-price">Mulai Rp 49.000</div>
+                        <span class="upsell-link">+ Lihat &amp; Custom</span>
+                    </div>
+                </a>
+                <a href="product-bantal.html" class="upsell-card">
+                    <img src="images/bantal-1.png" alt="Bantal Custom">
+                    <div class="upsell-info">
+                        <h4>Bantal Full Print Custom</h4>
+                        <div class="upsell-price">Mulai Rp 45.000</div>
+                        <span class="upsell-link">+ Lihat &amp; Custom</span>
+                    </div>
+                </a>
+                <a href="product-hoodie.html" class="upsell-card">
+                    <img src="images/hoodie-depan.png" alt="Hoodie Custom">
+                    <div class="upsell-info">
+                        <h4>Hoodie Fleece 280gsm</h4>
+                        <div class="upsell-price">Mulai Rp 135.000</div>
+                        <span class="upsell-link">+ Lihat &amp; Custom</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- FOOTER RESMI -->
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <img src="images/logo.png" alt="8UR STORY" style="height: 45px; margin-bottom: 15px;">
+                <p>Platform pakaian custom berkualitas premium. Ekspresikan gaya dan ceritamu tanpa batas setiap harinya.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Navigasi Cepat</h4>
+                <ul>
+                    <li><a href="index.html#katalog">Katalog Produk</a></li>
+                    <li><a href="index.html#tentang-kami">Tentang Kami</a></li>
+                    <li><a href="index.html#cara-order">Cara Pemesanan</a></li>
+                    <li><a href="index.html#faq">FAQ / Bantuan</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Metode Pembayaran</h4>
+                <p>Kami mendukung pembayaran instan &amp; aman:</p>
+                <div class="footer-payments">
+                    <span>QRIS</span>
+                    <span>BCA</span>
+                    <span>Mandiri</span>
+                    <span>BRI</span>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 8UR STORY Official. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js?v=5.0"></script>
+
+    <!-- SCRIPT ENHANCEMENT KHUSUS HALAMAN KERANJANG (PROGRESS BAR & VOUCHER) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const targetFreeGift = 150000; // Target Rp 150.000 untuk Box 3D & Prioritas
+            const fillEl         = document.getElementById('shipping-progress-fill');
+            const textEl         = document.getElementById('shipping-status-text');
+            const badgeEl        = document.getElementById('shipping-percent-badge');
+            const countEl        = document.getElementById('summary-item-count');
+            const clearBtn       = document.getElementById('btn-clear-all-cart');
+            const promoInput     = document.getElementById('promo-code-input');
+            const promoBtn       = document.getElementById('btn-apply-promo');
+            const promoMsg       = document.getElementById('promo-status-msg');
+
+            function syncCartEnhancements() {
+                const cart = JSON.parse(localStorage.getItem('8urStoryCart')) || [];
+                const totalQty   = cart.reduce((s, i) => s + (parseInt(i.qty) || 1), 0);
+                const totalPrice = cart.reduce((s, i) => s + (parseInt(i.totalPrice) || 0), 0);
+
+                if (countEl) countEl.textContent = totalQty + ' pcs';
+                if (clearBtn) clearBtn.style.display = cart.length > 0 ? 'inline-flex' : 'none';
+
+                const pct = Math.min(100, Math.round((totalPrice / targetFreeGift) * 100));
+                if (fillEl) fillEl.style.width = pct + '%';
+                if (badgeEl) badgeEl.textContent = pct + '%';
+
+                if (textEl) {
+                    if (totalPrice === 0) {
+                        textEl.innerHTML = '🛒 Keranjang masih kosong. Yuk pilih produk favoritmu untuk dapat <strong>Bonus Box 3D Eksklusif!</strong>';
+                    } else if (totalPrice < targetFreeGift) {
+                        const diff = (targetFreeGift - totalPrice).toLocaleString('id-ID');
+                        textEl.innerHTML = `🔥 Tambah <strong>Rp ${diff}</strong> lagi untuk klaim <strong>Gratis Packaging Box 3D + Prioritas Produksi!</strong>`;
+                    } else {
+                        textEl.innerHTML = '🎉 <strong>Selamat!</strong> Pesananmu berhak mendapat <strong>Gratis Packaging Box 3D Eksklusif &amp; Sticker Pack!</strong>';
+                    }
+                }
+            }
+
+            syncCartEnhancements();
+
+            /* Pantau perubahan jika user menekan tombol +/- atau Hapus */
+            const cartContainer = document.getElementById('cart-items-container');
+            if (cartContainer && 'MutationObserver' in window) {
+                const observer = new MutationObserver(syncCartEnhancements);
+                observer.observe(cartContainer, { childList: true, subtree: true });
+            }
+
+            /* Fitur Kosongkan Semua Keranjang */
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function () {
+                    const cart = JSON.parse(localStorage.getItem('8urStoryCart')) || [];
+                    if (cart.length === 0) return;
+                    if (confirm('Yakin ingin mengosongkan seluruh isi keranjang belanja?')) {
+                        localStorage.removeItem('8urStoryCart');
+                        location.reload();
+                    }
+                });
+            }
+
+            /* Fitur Kode Promo Interaktif */
+            window.applyQuickPromo = function (code) {
+                if (promoInput) {
+                    promoInput.value = code;
+                     promoBtn.click();
+                }
+            };
+
+            if (promoBtn && promoInput && promoMsg) {
+                promoBtn.addEventListener('click', function () {
+                    const code = promoInput.value.trim().toUpperCase();
+                    promoMsg.style.display = 'block';
+                    if (code === '8URVIP' || code === 'STORY10') {
+                        promoMsg.style.color = '#059669';
+                        promoMsg.innerHTML = '✓ Kode "' + code + '" aktif! Gratis Box Eksklusif &amp; Prioritas Antrean diterapkan.';
+                        if (typeof window.showToast === 'function') {
+                            window.showToast('Voucher ' + code + ' berhasil dipasang!', '🎟️');
+                        }
+                    } else if (!code) {
+                        promoMsg.style.color = '#D97706';
+                        promoMsg.innerHTML = '⚠️ Ketik kode promo terlebih dahulu (contoh: 8URVIP).';
+                    } else {
+                        promoMsg.style.color = '#E83124';
+                        promoMsg.innerHTML = '✕ Kode tidak ditemukan. Coba gunakan kode: 8URVIP';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
