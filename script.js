@@ -62,75 +62,59 @@ document.addEventListener('DOMContentLoaded', function () {
   const isHomePage = document.querySelector('.hero-section') !== null;
 
   if (isHomePage && !sessionStorage.getItem('8ur_welcome_voiced')) {
-    const welcomeEl = document.getElementById('vo-welcome') || new Audio('sound/selamat%20datang.MP3');
-    welcomeEl.preload = 'auto';
-    welcomeEl.muted = false;
-    welcomeEl.volume = 1.0;
+    const audioSrc = 'sound/selamat%20datang.MP3';
+    let welcomeEl = document.getElementById('vo-welcome');
+    if (!welcomeEl) {
+      welcomeEl = new Audio(audioSrc);
+      welcomeEl.preload = 'auto';
+    }
+    welcomeEl.autoplay = true;
 
-    let welcomeDone = false;
-    let welcomeTrying = false;
+    let welcomePlayed = false;
 
-    /* Event "kuat" = dianggap interaksi sungguhan oleh Chrome/Safari (pasti berhasil).
-       Event "lemah" (scroll/mousemove/touchmove) tetap dicoba, tapi hanya berhasil
-       kalau browser/situs sudah punya izin autoplay. */
-    const WELCOME_EVENTS = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown',
-                            'wheel', 'scroll', 'mousemove', 'touchmove'];
-
-    /* Layar "Ketuk untuk masuk" - muncul HANYA jika autoplay diblokir browser */
-    let welcomeGate = null;
-    function showWelcomeGate() {
-      if (welcomeDone || welcomeGate) return;
-      welcomeGate = document.createElement('div');
-      welcomeGate.setAttribute('role', 'button');
-      welcomeGate.style.cssText =
-        'position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;' +
-        'align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;' +
-        'background:linear-gradient(135deg,#a82a6e,#5b24b8);color:#fff;cursor:pointer;' +
-        'touch-action:none;font-family:Poppins,system-ui,sans-serif;';
-      welcomeGate.innerHTML =
-        '<div style="font-size:56px;line-height:1">\uD83D\uDD0A</div>' +
-        '<div style="font-size:26px;font-weight:800">Selamat Datang di 8UR STORY</div>' +
-        '<div style="font-size:16px;opacity:.9">Ketuk layar untuk masuk</div>';
-      document.body.appendChild(welcomeGate);
+    function markAsPlayed() {
+      welcomePlayed = true;
+      sessionStorage.setItem('8ur_welcome_voiced', 'true');
+      ['pointerdown', 'touchstart', 'touchmove', 'mousemove', 'wheel', 'scroll', 'keydown', 'click'].forEach(evt => {
+        window.removeEventListener(evt, forcePlayWelcome, true);
+      });
     }
 
-    function finishWelcome() {
-      if (welcomeDone) return;
-      welcomeDone = true;
-      if (welcomeGate) {
-        const g = welcomeGate;
-        g.style.transition = 'opacity .4s';
-        g.style.opacity = '0';
-        setTimeout(() => g.remove(), 450);
-        welcomeGate = null;
-      }
-      sessionStorage.setItem('8ur_welcome_voiced', 'true'); /* hanya 1x per sesi */
-      WELCOME_EVENTS.forEach(evt => window.removeEventListener(evt, tryPlayWelcome, true));
-    }
+    function forcePlayWelcome() {
+      if (welcomePlayed || sessionStorage.getItem('8ur_welcome_voiced')) return;
 
-    function tryPlayWelcome(e) {
-      if (welcomeDone || welcomeTrying || !welcomeEl.paused) return;
-      welcomeTrying = true;
-      welcomeEl.muted = false;   /* JANGAN pernah diputar muted: itu membuat sapaan "terpakai" tanpa suara */
+      /* Percobaan 1: Langsung putar bersuara penuh */
+      welcomeEl.muted = false;
       welcomeEl.volume = 1.0;
-      const p = welcomeEl.play();
-      if (p && typeof p.then === 'function') {
-        p.then(() => { welcomeTrying = false; finishWelcome(); })   /* sukses BERSUARA -> tandai sudah diputar */
-         .catch(() => {                                             /* diblokir -> tampilkan layar ketuk + listener tetap aktif */
-           welcomeTrying = false;
-           if (!e || e.type === undefined) showWelcomeGate();
-         });
-      } else {
-        welcomeTrying = false;
+      const playAttempt = welcomeEl.play();
+
+      if (playAttempt !== undefined) {
+        playAttempt.then(() => {
+          markAsPlayed();
+        }).catch(() => {
+          /* Percobaan 2 (Trik Bypass): Putar dalam keadaan Muted dulu (diizinkan browser), lalu Unmute paksa */
+          welcomeEl.muted = true;
+          welcomeEl.play().then(() => {
+            setTimeout(() => {
+              welcomeEl.muted = false;
+              welcomeEl.volume = 1.0;
+              if (!welcomeEl.paused) {
+                markAsPlayed();
+              }
+            }, 80);
+          }).catch(() => {
+            /* Jika sistem OS HP mengunci keras, akan langsung menyala begitu jari menyentuh/menggeser layar */
+          });
+        });
       }
     }
 
-    /* Coba autoplay dulu 0.5 detik setelah halaman dibuka */
-    setTimeout(() => tryPlayWelcome(), 500);
+    /* Jalankan otomatis tepat 0.5 detik (500ms) setelah halaman dibuka */
+    setTimeout(forcePlayWelcome, 500);
 
-    /* Kalau diblokir, tunggu gerakan/sentuhan pertama */
-    WELCOME_EVENTS.forEach(evt => {
-      window.addEventListener(evt, tryPlayWelcome, { capture: true, passive: true });
+    /* Pemicu cadangan super sensitif (termasuk gerakan mouse / geser layar) */
+    ['pointerdown', 'touchstart', 'touchmove', 'mousemove', 'wheel', 'scroll', 'keydown', 'click'].forEach(evt => {
+      window.addEventListener(evt, forcePlayWelcome, { capture: true, passive: true });
     });
   }
 
