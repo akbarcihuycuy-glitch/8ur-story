@@ -201,10 +201,225 @@
                 padding: 18px !important;
             }
         }
+
+        /* ── 5. SPLASH SCREEN INTERAKTIF "ENTER 8UR STORY" ── */
+        .splash-gate-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            background: linear-gradient(-45deg, #111827, #1e1b4b, #5b21b6, #991b1b, #E83124);
+            background-size: 350% 350%;
+            animation: splashGradMove 10s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
+        }
+        .splash-gate-overlay.gate-open {
+            opacity: 0;
+            transform: scale(1.08);
+            visibility: hidden;
+            pointer-events: none;
+        }
+        @keyframes splashGradMove {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .splash-card {
+            text-align: center;
+            color: #FFFFFF;
+            max-width: 400px;
+            width: 100%;
+            padding: 38px 28px;
+            border-radius: 28px;
+            background: rgba(17, 24, 39, 0.42);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1.5px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+        }
+        .splash-logo-ring {
+            position: relative;
+            width: 145px;
+            height: 145px;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .splash-logo-ring::before,
+        .splash-logo-ring::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 216, 74, 0.55);
+            animation: ringRipple 2.4s ease-out infinite;
+        }
+        .splash-logo-ring::after {
+            animation-delay: 1.2s;
+            border-color: rgba(232, 49, 36, 0.65);
+        }
+        @keyframes ringRipple {
+            0%   { transform: scale(0.85); opacity: 1; }
+            100% { transform: scale(1.45); opacity: 0; }
+        }
+        .splash-logo-img {
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.4));
+            animation: logoFloatGlow 2.2s ease-in-out infinite alternate;
+        }
+        @keyframes logoFloatGlow {
+            0%   { transform: translateY(0) scale(1.35); filter: drop-shadow(0 6px 14px rgba(255, 216, 74, 0.25)); }
+            100% { transform: translateY(-7px) scale(1.5); filter: drop-shadow(0 14px 28px rgba(232, 49, 36, 0.75)); }
+        }
+        .splash-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.14);
+            color: #FFD84A;
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            padding: 4px 14px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 216, 74, 0.35);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .splash-title {
+            font-size: 1.35rem;
+            font-weight: 900;
+            margin: 0 0 6px;
+            letter-spacing: 0.4px;
+            color: #FFFFFF;
+        }
+        .splash-sub {
+            font-size: 12.8px;
+            color: rgba(255, 255, 255, 0.85);
+            margin: 0 0 18px;
+            line-height: 1.5;
+        }
+        .splash-emoji-wave {
+            display: inline-block;
+            font-size: 16px;
+            animation: emojiBounce 1s ease-in-out infinite alternate;
+        }
+        @keyframes emojiBounce {
+            from { transform: translateY(0) rotate(-8deg); }
+            to   { transform: translateY(-4px) rotate(12deg); }
+        }
+        .splash-bar-wrap {
+            width: 100%;
+            max-width: 230px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.16);
+            border-radius: 50px;
+            margin: 0 auto 8px;
+            overflow: hidden;
+        }
+        .splash-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #FFD84A, #E83124);
+            border-radius: 50px;
+            animation: splashLoadFill 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes splashLoadFill {
+            0%   { width: 0%; }
+            100% { width: 100%; }
+        }
+        .splash-ready-box {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeInUp 0.45s ease both;
+        }
+        .splash-ready-box.show {
+            display: flex;
+        }
+        .btn-enter-8ur {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 260px;
+            padding: 14px 28px;
+            border-radius: 50px;
+            border: 1.5px solid rgba(255, 216, 74, 0.5);
+            background: linear-gradient(135deg, #E83124 0%, #C0281E 100%);
+            color: #FFFFFF;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14.5px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            cursor: pointer;
+            box-shadow: 0 10px 28px rgba(232, 49, 36, 0.55);
+            transition: all 0.25s ease;
+            animation: btnPulseGlow 2s infinite;
+        }
+        .btn-enter-8ur:hover {
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 14px 34px rgba(232, 49, 36, 0.75);
+        }
+        .btn-enter-logo-mini {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            background: #FFFFFF;
+            border-radius: 50%;
+            padding: 1px;
+            animation: miniSpinPulse 2.5s ease-in-out infinite;
+        }
+        @keyframes miniSpinPulse {
+            0%, 100% { transform: scale(1.25) rotate(0deg); }
+            50%      { transform: scale(1.4) rotate(8deg); }
+        }
+        
+        @keyframes btnPulseGlow {
+            0%   { box-shadow: 0 0 0 0 rgba(255, 216, 74, 0.55), 0 10px 28px rgba(232, 49, 36, 0.5); }
+            70%  { box-shadow: 0 0 0 14px rgba(255, 216, 74, 0), 0 10px 28px rgba(232, 49, 36, 0.5); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 216, 74, 0), 0 10px 28px rgba(232, 49, 36, 0.5); }
+        }
+
     </style>
 </head>
 <body>
     <div id="page-progress"></div>
+
+    <!-- SPLASH SCREEN INTERAKTIF (PEMBUKA KUNCI AUDIO BROWSER 100%) -->
+    <div id="splash-gate" class="splash-gate-overlay">
+        <div class="splash-card">
+            <div class="splash-logo-ring">
+                <img src="images/logo.png" alt="8UR STORY" class="splash-logo-img">
+            </div>
+            <span class="splash-badge">✨ OFFICIAL CUSTOM APPAREL</span>
+            <h2 class="splash-title">8UR STORY</h2>
+
+            <!-- Fase 1: Animasi Loading 1.4 Detik -->
+            <div id="splash-loading-box">
+                <p class="splash-sub">Tunggu sebentar ya Kak, menyiapkan koleksi terbaik... <span class="splash-emoji-wave">😊</span></p>
+                <div class="splash-bar-wrap">
+                    <div class="splash-bar-fill"></div>
+                </div>
+            </div>
+
+            <!-- Fase 2: Tombol Enter 8UR STORY (Muncul Setelah Loading Selesai) -->
+            <div id="splash-ready-box" class="splash-ready-box">
+                <p class="splash-sub">Katalog &amp; Asisten CS Lisa sudah siap menyambutmu! <span class="splash-emoji-wave">🎉</span></p>
+                <button type="button" id="btn-enter-8ur" class="btn-enter-8ur">
+                    <img src="images/logo.png" alt="" class="btn-enter-logo-mini">
+                    <span>Enter 8UR STORY &rarr;</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- ELEMEN AUDIO FISIK SAPAAN CS LISA (DIJAMIN TERMUAT OLEH BROWSER) -->
     <audio id="vo-welcome" preload="auto" style="display:none;">
