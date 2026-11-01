@@ -56,24 +56,88 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-/* ══════════════════════════════════════════════════════════════════
-     0B. SPLASH GATE "ENTER 8UR STORY" + VOICE OVER CS LISA INSTAN
-  ══════════════════════════════════════════════════════════════════ */
-  const isHomePage = document.querySelector('.hero-section') !== null;
-  const splashGate = document.getElementById('splash-gate');
-  const loadingBox = document.getElementById('splash-loading-box');
-  const readyBox   = document.getElementById('splash-ready-box');
+/* ════════════════════════════════════════════════════════════════════════
+     0B. SPLASH GATE "ENTER 8UR STORY" + SMOOTH FADE-IN VOICE OVER CS LISA
+  ════════════════════════════════════════════════════════════════════════ */
+  const isHomePage  = document.querySelector('.hero-section') !== null;
+  const splashGate  = document.getElementById('splash-gate');
+  const loadingBox  = document.getElementById('splash-loading-box');
+  const readyBox    = document.getElementById('splash-ready-box');
   const btnEnter8ur = document.getElementById('btn-enter-8ur');
 
+  // Nada denting lembut (Soft Welcome Chime) saat tombol Enter diklik
+  function playSoftWelcomeChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+
+      [587.33, 880].forEach((freq, idx) => {
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.11);
+        gain.gain.setValueAtTime(0.001, now + idx * 0.11);
+        gain.gain.linearRampToValueAtTime(0.08, now + idx * 0.11 + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.11 + 0.55);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.11);
+        osc.stop(now + idx * 0.11 + 0.56);
+      });
+    } catch (e) {}
+  }
+
+  // Efek Volume Naik Perlahan (Smooth Fade-In) agar suara tidak mengagetkan
+  function playAudioWithSmoothFadeIn(audioEl, durationMs = 750) {
+    audioEl.muted = false;
+    audioEl.volume = 0.12; // Mulai dari volume lembut (12%)
+    audioEl.currentTime = 0;
+
+    // Munculkan gelembung chat CS Lisa bersamaan dengan suara
+    const greetBubble = document.getElementById('cs-greeting-bubble');
+    if (greetBubble) {
+      greetBubble.style.opacity = '1';
+      greetBubble.style.transform = 'translateY(0) scale(1)';
+    }
+
+    const playPromise = audioEl.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        const steps    = 15;
+        const stepTime = durationMs / steps;
+        const volStep  = (1.0 - 0.12) / steps;
+        let currentStep = 0;
+
+        const fadeTimer = setInterval(() => {
+          currentStep++;
+          audioEl.volume = Math.min(1.0, 0.12 + (volStep * currentStep));
+          if (currentStep >= steps || audioEl.paused) {
+            clearInterval(fadeTimer);
+          }
+        }, stepTime);
+      }).catch(err => console.log('Audio error:', err));
+    }
+  }
+
   if (splashGate) {
-    // Jika sudah pernah masuk di sesi tab ini, langsung sembunyikan splash screen
     if (!isHomePage || sessionStorage.getItem('8ur_welcome_voiced')) {
       splashGate.style.display = 'none';
       document.body.style.overflow = '';
     } else {
       document.body.style.overflow = 'hidden';
 
-      // Setelah 1.4 detik loading bar penuh, tampilkan tombol "Enter 8UR STORY"
+      // Sembunyikan dulu gelembung sapaan pojok kanan bawah sampai Lisa mulai bicara
+      setTimeout(() => {
+        const greetBubble = document.getElementById('cs-greeting-bubble');
+        if (greetBubble && !sessionStorage.getItem('8ur_welcome_voiced')) {
+          greetBubble.style.opacity = '0';
+          greetBubble.style.transform = 'translateY(12px) scale(0.95)';
+        }
+      }, 50);
+
+      // Tampilkan tombol "Enter 8UR STORY" setelah loading 1.4 detik
       setTimeout(() => {
         if (loadingBox) loadingBox.style.display = 'none';
         if (readyBox) readyBox.classList.add('show');
@@ -81,29 +145,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (btnEnter8ur) {
         btnEnter8ur.addEventListener('click', function () {
-          // 1. Buka tirai halaman Home dengan transisi halus
+          // 1. Bunyikan denting lembut & buka tirai halaman Home
+          playSoftWelcomeChime();
           splashGate.classList.add('gate-open');
           document.body.style.overflow = '';
 
-          // 2. Putar suara CS Lisa tepat saat halaman Home terbuka (100% diizinkan Chrome/Safari)
+          // 2. Buka kunci audio secara senyap tepat saat klik (wajib untuk Safari/iOS)
           let welcomeEl = document.getElementById('vo-welcome');
           if (!welcomeEl) {
             welcomeEl = new Audio('sound/selamat%20datang.MP3');
           }
-          welcomeEl.muted = false;
-          welcomeEl.volume = 1.0;
-          welcomeEl.currentTime = 0;
+          welcomeEl.muted = true;
+          welcomeEl.play().then(() => {
+            welcomeEl.pause();
+            welcomeEl.currentTime = 0;
+          }).catch(() => {});
 
+          // 3. Tunggu tirai terbuka penuh (850ms), lalu masuk dengan suara CS Lisa secara Smooth Fade-In
           setTimeout(() => {
-            welcomeEl.play().catch(() => {
-              const backupVo = new Audio('sound/selamat%20datang.MP3');
-              backupVo.play().catch(err => console.log('Audio error:', err));
-            });
-          }, 250);
+            playAudioWithSmoothFadeIn(welcomeEl, 750);
+          }, 850);
 
-          // 3. Kunci sesi agar saat pindah ke produk lalu kembali ke Home tidak ditahan lagi
           sessionStorage.setItem('8ur_welcome_voiced', 'true');
-          setTimeout(() => splashGate.remove(), 650);
+          setTimeout(() => splashGate.remove(), 700);
         });
       }
     }
