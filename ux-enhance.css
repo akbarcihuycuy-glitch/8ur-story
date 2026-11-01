@@ -1,0 +1,221 @@
+/* ============================================================
+   8UR STORY — UX MOTION ENHANCEMENT LAYER
+   File tambahan, tidak menimpa style.css yang sudah ada.
+   Tujuan: memberi highlight interaksi & motion yang halus,
+   profesional, dan tidak berlebihan.
+   ============================================================ */
+
+:root{
+  --ux-ease: cubic-bezier(.22,1,.36,1);
+  --ux-fast: .18s;
+  --ux-base: .35s;
+  --ux-slow: .6s;
+}
+
+/* Hormati pengguna yang mematikan animasi di sistemnya */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html{ scroll-behavior:smooth; }
+
+/* ---------------------------------------------------------------
+   1. PAGE LOADING BAR (#page-progress sudah ada di tiap halaman)
+--------------------------------------------------------------- */
+#page-progress{
+  position:fixed; top:0; left:0; height:3px; width:0%;
+  background:linear-gradient(90deg,#ff5050,#ff8a3d);
+  z-index:99999;
+  transition:width .3s var(--ux-ease), opacity .4s ease .15s;
+  box-shadow:0 0 8px rgba(255,80,80,.6);
+}
+#page-progress.ux-done{ opacity:0; }
+
+/* ---------------------------------------------------------------
+   2. SCROLL REVEAL — satu kali per elemen, lembut & senyap
+--------------------------------------------------------------- */
+.ux-reveal{
+  opacity:0;
+  transform:translateY(22px);
+  transition:opacity var(--ux-slow) var(--ux-ease),
+             transform var(--ux-slow) var(--ux-ease);
+  will-change:transform,opacity;
+}
+.ux-reveal.ux-in{ opacity:1; transform:translateY(0); }
+
+/* stagger ringan untuk grid kartu (produk/fitur) */
+.ux-stagger > *{
+  opacity:0; transform:translateY(18px);
+  transition:opacity var(--ux-base) var(--ux-ease),
+             transform var(--ux-base) var(--ux-ease);
+}
+.ux-stagger.ux-in > *{ opacity:1; transform:translateY(0); }
+.ux-stagger.ux-in > *:nth-child(1){ transition-delay:.03s; }
+.ux-stagger.ux-in > *:nth-child(2){ transition-delay:.08s; }
+.ux-stagger.ux-in > *:nth-child(3){ transition-delay:.13s; }
+.ux-stagger.ux-in > *:nth-child(4){ transition-delay:.18s; }
+.ux-stagger.ux-in > *:nth-child(5){ transition-delay:.23s; }
+.ux-stagger.ux-in > *:nth-child(6){ transition-delay:.28s; }
+
+/* ---------------------------------------------------------------
+   3. KARTU PRODUK & FITUR — respon terhadap hover (bukan otomatis)
+--------------------------------------------------------------- */
+.product-card, .feature-card, .faq-item, .t-shirt-preview, .order-summary{
+  transition:transform var(--ux-base) var(--ux-ease),
+             box-shadow var(--ux-base) var(--ux-ease);
+}
+.product-card:hover, .feature-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 18px 32px -14px rgba(20,20,30,.22);
+}
+.product-card .product-img-wrapper img,
+.t-shirt-preview .base-tshirt{
+  transition:transform .5s var(--ux-ease);
+}
+.product-card:hover .product-img-wrapper img{ transform:scale(1.06); }
+
+.btn-card-action{ transition:gap var(--ux-fast) var(--ux-ease), opacity var(--ux-fast); }
+.product-card:hover .btn-card-action{ gap:10px; opacity:1; }
+
+/* ---------------------------------------------------------------
+   4. TOMBOL — tekanan & ripple terkendali
+--------------------------------------------------------------- */
+.btn-primary, .btn-secondary, .btn-hero-primary, .btn-hero-secondary,
+.btn-secondary-dark, .filter-btn, #btn-confirm-order, #add-to-cart, #buy-now{
+  position:relative; overflow:hidden;
+  transition:transform var(--ux-fast) var(--ux-ease),
+             box-shadow var(--ux-base) var(--ux-ease),
+             filter var(--ux-fast) var(--ux-ease);
+}
+.btn-primary:hover, .btn-hero-primary:hover, #btn-confirm-order:hover,
+#add-to-cart:hover, #buy-now:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.04);
+}
+.btn-primary:active, .btn-hero-primary:active, #btn-confirm-order:active,
+#add-to-cart:active, #buy-now:active, .btn-secondary:active{
+  transform:translateY(0) scale(.97);
+}
+
+.ux-ripple{
+  position:absolute; border-radius:50%; pointer-events:none;
+  background:rgba(255,255,255,.55);
+  transform:scale(0); opacity:.6;
+  animation:ux-ripple-anim .55s ease-out forwards;
+}
+@keyframes ux-ripple-anim{
+  to{ transform:scale(2.6); opacity:0; }
+}
+
+/* ---------------------------------------------------------------
+   5. BADGE KERANJANG — "pop" tiap kali jumlah berubah
+--------------------------------------------------------------- */
+.cart-badge{ transition:transform var(--ux-fast) var(--ux-ease); }
+.cart-badge.ux-pop{ animation:ux-badge-pop .42s var(--ux-ease); }
+@keyframes ux-badge-pop{
+  0%{ transform:scale(1); }
+  35%{ transform:scale(1.5); background:#ff5050; }
+  100%{ transform:scale(1); }
+}
+
+/* ---------------------------------------------------------------
+   6. TOAST NOTIFIKASI — mengonfirmasi aksi pengguna
+--------------------------------------------------------------- */
+#ux-toast-stack{
+  position:fixed; right:18px; bottom:18px; z-index:100000;
+  display:flex; flex-direction:column; gap:10px;
+  pointer-events:none;
+}
+.ux-toast{
+  pointer-events:auto;
+  min-width:220px; max-width:320px;
+  background:#1b1b1f; color:#fff;
+  padding:13px 16px; border-radius:12px;
+  font-size:13.5px; font-weight:600; letter-spacing:.1px;
+  display:flex; align-items:center; gap:10px;
+  box-shadow:0 14px 30px -10px rgba(0,0,0,.45);
+  transform:translateX(130%); opacity:0;
+  animation:ux-toast-in .45s var(--ux-ease) forwards;
+}
+.ux-toast.ux-leave{ animation:ux-toast-out .35s ease-in forwards; }
+.ux-toast .ux-toast-icon{ font-size:16px; }
+@keyframes ux-toast-in{
+  to{ transform:translateX(0); opacity:1; }
+}
+@keyframes ux-toast-out{
+  to{ transform:translateX(130%); opacity:0; }
+}
+
+/* ---------------------------------------------------------------
+   7. SKELETON LOADING — untuk ringkasan pesanan saat checkout
+--------------------------------------------------------------- */
+.ux-skel{
+  position:relative; overflow:hidden;
+  background:#eceef1; border-radius:8px;
+}
+.ux-skel::after{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+  transform:translateX(-100%);
+  animation:ux-shimmer 1.3s infinite;
+}
+@keyframes ux-shimmer{ to{ transform:translateX(100%); } }
+
+/* ---------------------------------------------------------------
+   8. SWATCH WARNA, FILTER, THUMBNAIL — umpan balik seleksi halus
+--------------------------------------------------------------- */
+.color-swatch, .filter-btn, .thumb-item{
+  transition:transform var(--ux-fast) var(--ux-ease),
+             box-shadow var(--ux-fast) var(--ux-ease),
+             border-color var(--ux-fast) var(--ux-ease);
+}
+.color-swatch:hover{ transform:scale(1.12); }
+.color-swatch.active{ transform:scale(1.08); box-shadow:0 0 0 2px #fff,0 0 0 4px var(--red,#ff5050); }
+.thumb-item:hover{ transform:translateY(-2px); }
+
+/* ---------------------------------------------------------------
+   9. FAQ ACCORDION — buka/tutup halus (menjawab klik pengguna)
+--------------------------------------------------------------- */
+.faq-answer{
+  overflow:hidden;
+  max-height:0;
+  transition:max-height var(--ux-base) var(--ux-ease), opacity var(--ux-base) ease;
+  opacity:0;
+}
+.faq-item.ux-open .faq-answer{ opacity:1; }
+.faq-icon{ display:inline-block; transition:transform var(--ux-base) var(--ux-ease); }
+.faq-item.ux-open .faq-icon{ transform:rotate(45deg); }
+
+/* ---------------------------------------------------------------
+   10. COUNTDOWN PEMBAYARAN — detak perhatian saat waktu menipis
+--------------------------------------------------------------- */
+.countdown-box.ux-urgent{
+  animation:ux-pulse-urgent 1s ease-in-out infinite;
+}
+@keyframes ux-pulse-urgent{
+  0%,100%{ box-shadow:0 0 0 0 rgba(255,60,60,.35); }
+  50%{ box-shadow:0 0 0 8px rgba(255,60,60,0); }
+}
+
+/* ---------------------------------------------------------------
+   11. FOKUS KEYBOARD — tetap terlihat jelas (aksesibilitas)
+--------------------------------------------------------------- */
+a:focus-visible, button:focus-visible, input:focus-visible,
+textarea:focus-visible, select:focus-visible{
+  outline:2px solid #ff5050; outline-offset:2px; border-radius:6px;
+}
+
+/* ---------------------------------------------------------------
+   12. ANGKA HARGA — transisi halus saat nilai berubah (opsi/qty)
+--------------------------------------------------------------- */
+#total-price{ transition:opacity .18s ease; }
+#total-price.ux-flash{ animation:ux-price-flash .4s ease; }
+@keyframes ux-price-flash{
+  0%{ opacity:.35; transform:translateY(-2px); }
+  100%{ opacity:1; transform:translateY(0); }
+}
