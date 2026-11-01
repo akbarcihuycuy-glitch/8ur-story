@@ -56,66 +56,57 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
- /* ══════════════════════════════════════════════════════════════════
-     0B. VOICE OVER SAPAAN CS LISA (AGGRESSIVE AUTOPLAY 0.5 DETIK)
+/* ══════════════════════════════════════════════════════════════════
+     0B. SPLASH GATE "ENTER 8UR STORY" + VOICE OVER CS LISA INSTAN
   ══════════════════════════════════════════════════════════════════ */
   const isHomePage = document.querySelector('.hero-section') !== null;
+  const splashGate = document.getElementById('splash-gate');
+  const loadingBox = document.getElementById('splash-loading-box');
+  const readyBox   = document.getElementById('splash-ready-box');
+  const btnEnter8ur = document.getElementById('btn-enter-8ur');
 
-  if (isHomePage && !sessionStorage.getItem('8ur_welcome_voiced')) {
-    const audioSrc = 'sound/selamat%20datang.MP3';
-    let welcomeEl = document.getElementById('vo-welcome');
-    if (!welcomeEl) {
-      welcomeEl = new Audio(audioSrc);
-      welcomeEl.preload = 'auto';
-    }
-    welcomeEl.autoplay = true;
+  if (splashGate) {
+    // Jika sudah pernah masuk di sesi tab ini, langsung sembunyikan splash screen
+    if (!isHomePage || sessionStorage.getItem('8ur_welcome_voiced')) {
+      splashGate.style.display = 'none';
+      document.body.style.overflow = '';
+    } else {
+      document.body.style.overflow = 'hidden';
 
-    let welcomePlayed = false;
+      // Setelah 1.4 detik loading bar penuh, tampilkan tombol "Enter 8UR STORY"
+      setTimeout(() => {
+        if (loadingBox) loadingBox.style.display = 'none';
+        if (readyBox) readyBox.classList.add('show');
+      }, 1400);
 
-    function markAsPlayed() {
-      welcomePlayed = true;
-      sessionStorage.setItem('8ur_welcome_voiced', 'true');
-      ['pointerdown', 'touchstart', 'touchmove', 'mousemove', 'wheel', 'scroll', 'keydown', 'click'].forEach(evt => {
-        window.removeEventListener(evt, forcePlayWelcome, true);
-      });
-    }
+      if (btnEnter8ur) {
+        btnEnter8ur.addEventListener('click', function () {
+          // 1. Buka tirai halaman Home dengan transisi halus
+          splashGate.classList.add('gate-open');
+          document.body.style.overflow = '';
 
-    function forcePlayWelcome() {
-      if (welcomePlayed || sessionStorage.getItem('8ur_welcome_voiced')) return;
+          // 2. Putar suara CS Lisa tepat saat halaman Home terbuka (100% diizinkan Chrome/Safari)
+          let welcomeEl = document.getElementById('vo-welcome');
+          if (!welcomeEl) {
+            welcomeEl = new Audio('sound/selamat%20datang.MP3');
+          }
+          welcomeEl.muted = false;
+          welcomeEl.volume = 1.0;
+          welcomeEl.currentTime = 0;
 
-      /* Percobaan 1: Langsung putar bersuara penuh */
-      welcomeEl.muted = false;
-      welcomeEl.volume = 1.0;
-      const playAttempt = welcomeEl.play();
+          setTimeout(() => {
+            welcomeEl.play().catch(() => {
+              const backupVo = new Audio('sound/selamat%20datang.MP3');
+              backupVo.play().catch(err => console.log('Audio error:', err));
+            });
+          }, 250);
 
-      if (playAttempt !== undefined) {
-        playAttempt.then(() => {
-          markAsPlayed();
-        }).catch(() => {
-          /* Percobaan 2 (Trik Bypass): Putar dalam keadaan Muted dulu (diizinkan browser), lalu Unmute paksa */
-          welcomeEl.muted = true;
-          welcomeEl.play().then(() => {
-            setTimeout(() => {
-              welcomeEl.muted = false;
-              welcomeEl.volume = 1.0;
-              if (!welcomeEl.paused) {
-                markAsPlayed();
-              }
-            }, 80);
-          }).catch(() => {
-            /* Jika sistem OS HP mengunci keras, akan langsung menyala begitu jari menyentuh/menggeser layar */
-          });
+          // 3. Kunci sesi agar saat pindah ke produk lalu kembali ke Home tidak ditahan lagi
+          sessionStorage.setItem('8ur_welcome_voiced', 'true');
+          setTimeout(() => splashGate.remove(), 650);
         });
       }
     }
-
-    /* Jalankan otomatis tepat 0.5 detik (500ms) setelah halaman dibuka */
-    setTimeout(forcePlayWelcome, 500);
-
-    /* Pemicu cadangan super sensitif (termasuk gerakan mouse / geser layar) */
-    ['pointerdown', 'touchstart', 'touchmove', 'mousemove', 'wheel', 'scroll', 'keydown', 'click'].forEach(evt => {
-      window.addEventListener(evt, forcePlayWelcome, { capture: true, passive: true });
-    });
   }
 
   /* ══════════════════════════════════════
