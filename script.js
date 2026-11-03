@@ -851,55 +851,104 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   if (btnSubmitPay) {
-    btnSubmitPay.addEventListener('click', function () {
+    btnSubmitPay.addEventListener('click', async function () {
       const proof = document.getElementById('payment-proof');
       if (!proof || proof.files.length === 0) {
         showToast('Mohon upload bukti pembayaran Anda terlebih dahulu!', '⚠️');
         return;
       }
 
-      /* Hentikan timer & suara peringatan 10 detik agar tidak tabrakan dengan suara sukses */
+      /* 1. Hentikan timer & ubah tombol jadi loading */
       stopPaymentTimer(true);
-      paymentModal.style.display = 'none';
-      setStep(2);
+      const originalText = btnSubmitPay.textContent;
+      btnSubmitPay.disabled = true;
+      btnSubmitPay.textContent = '⏳ Memproses Pesanan...';
 
-      paymentSuccessSound.muted = false;
-      paymentSuccessSound.volume = 1.0;
-      paymentSuccessSound.currentTime = 0;
-      paymentSuccessSound.play().catch(() => {
-        const backupAudio = new Audio('sound/pembayaran%20diterima.MP3');
-        backupAudio.play().catch(err => console.log('Audio error:', err));
-      });
+      try {
+        const cartData = JSON.parse(localStorage.getItem('8urStoryCart')) || [];
+        const selectedPayment = document.querySelector('input[name="payment"]:checked')?.value || 'QRIS';
+        
+        // 2. Siapkan data JSON untuk dikirim ke API Admin
+        const payload = {
+          buyer_name: document.getElementById('buyer-name')?.value.trim(),
+          buyer_phone: document.getElementById('buyer-phone')?.value.trim(),
+          buyer_email: document.getElementById('buyer-email')?.value.trim(),
+          buyer_address: document.getElementById('buyer-address')?.value.trim(),
+          payment_method: selectedPayment,
+          // (Data gambar belum ikut dikirim sementara untuk memverifikasi API pesanan text bekerja)
+          items: cartData.map(item => ({
+            product_key: (item.product.toLowerCase().includes('hoodie')) ? 'hoodie' : 
+                         (item.product.toLowerCase().includes('panjang')) ? 'kaos-panjang' :
+                         (item.product.toLowerCase().includes('topi')) ? 'topi' :
+                         (item.product.toLowerCase().includes('bantal')) ? 'bantal' : 'kaos-pendek',
+            product_name: item.product,
+            color: item.color,
+            size_label: item.size,
+            qty: item.qty
+          }))
+        };
 
-      const orderIdEl = document.getElementById('success-order-id');
-      if (orderIdEl) orderIdEl.textContent = finalOrderID;
+        // 3. Tembak API Server Admin Anda
+        const response = await fetch('https://8ur-story-admin.onrender.com/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-      const cartData = JSON.parse(localStorage.getItem('8urStoryCart')) || [];
-      const selectedPayment = document.querySelector('input[name="payment"]:checked')?.value || 'QRIS';
+        const result = await response.json();
 
-      const orderData = {
-        orderId: finalOrderID,
-        name: document.getElementById('buyer-name')?.value.trim() || 'Pelanggan 8UR STORY',
-        phone: document.getElementById('buyer-phone')?.value.trim() || '-',
-        email: document.getElementById('buyer-email')?.value.trim() || '-',
-        address: document.getElementById('buyer-address')?.value.trim() || '-',
-        paymentMethod: selectedPayment,
-        date: new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }),
-        total: checkoutTotal,
-        items: cartData
-      };
+        if (!response.ok) {
+          throw new Error(result.error || 'Gagal terhubung ke server.');
+        }
 
-      window.currentOrderData = orderData;
+        // 4. Jika Sukses, jalankan rutinitas sukses sebelumnya
+        paymentModal.style.display = 'none';
+        setStep(2);
 
-      if (typeof sendEmailInvoice === 'function') {
-        sendEmailInvoice(orderData);
-        showToast(`Invoice dikirim ke ${orderData.email}`, '📧');
+        paymentSuccessSound.muted = false;
+        paymentSuccessSound.volume = 1.0;
+        paymentSuccessSound.currentTime = 0;
+        paymentSuccessSound.play().catch(() => {
+          const backupAudio = new Audio('sound/pembayaran%20diterima.MP3');
+          backupAudio.play().catch(err => console.log('Audio error:', err));
+        });
+
+        // Tampilkan ID Pesanan Resmi dari Database
+        if (document.getElementById('success-order-id')) {
+            document.getElementById('success-order-id').textContent = result.orderId;
+        }
+
+        // Jalankan sistem invoice email (dijaga sesuai fungsi asli toko)
+        window.currentOrderData = {
+            orderId: result.orderId,
+            name: payload.buyer_name,
+            email: payload.buyer_email,
+            phone: payload.buyer_phone,
+            address: payload.buyer_address,
+            paymentMethod: payload.payment_method,
+            date: new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }),
+            total: checkoutTotal,
+            items: cartData
+        };
+
+        if (typeof sendEmailInvoice === 'function') {
+          sendEmailInvoice(window.currentOrderData);
+        }
+
+        localStorage.removeItem('8urStoryCart');
+        updateCartCount();
+        successModal.style.display = 'flex';
+
+      } catch (error) {
+        // Jika API Error / Render mati
+        showToast(error.message, '❌');
+        paymentModal.style.display = 'none';
+        setStep(1, true); // Failed step
+        if (failedModal) failedModal.style.display = 'flex';
+      } finally {
+        btnSubmitPay.disabled = false;
+        btnSubmitPay.textContent = originalText;
       }
-
-      localStorage.removeItem('8urStoryCart');
-      updateCartCount();
-
-      successModal.style.display = 'flex';
     });
   }
 
