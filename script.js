@@ -927,23 +927,27 @@ document.addEventListener('DOMContentLoaded', function () {
         if (document.getElementById('success-order-id')) {
             document.getElementById('success-order-id').textContent = result.orderId;
         }
-
+        
         // Jalankan sistem invoice email (dijaga sesuai fungsi asli toko)
-        window.currentOrderData = {
-            orderId: result.orderId,
-            name: payload.buyer_name,
-            email: payload.buyer_email,
-            phone: payload.buyer_phone,
-            address: payload.buyer_address,
-            paymentMethod: payload.payment_method,
-            date: new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }),
-            total: checkoutTotal,
-            items: cartData
-        };
-
-        if (typeof sendEmailInvoice === 'function') {
-          sendEmailInvoice(window.currentOrderData);
-        }
+        // window.currentOrderData = { ... };
+        // if (typeof sendEmailInvoice === 'function') {
+        //   sendEmailInvoice(window.currentOrderData);
+        // }
+        // window.currentOrderData = {
+        //     orderId: result.orderId,
+        //     name: payload.buyer_name,
+        //     email: payload.buyer_email,
+        //     phone: payload.buyer_phone,
+        //     address: payload.buyer_address,
+        //     paymentMethod: payload.payment_method,
+        //     date: new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }),
+        //     total: checkoutTotal,
+        //     items: cartData
+        // };
+        // 
+        // if (typeof sendEmailInvoice === 'function') {
+        //   sendEmailInvoice(window.currentOrderData);
+        // }
 
         localStorage.removeItem('8urStoryCart');
         updateCartCount();
