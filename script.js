@@ -868,7 +868,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const cartData = JSON.parse(localStorage.getItem('8urStoryCart')) || [];
         const selectedPayment = document.querySelector('input[name="payment"]:checked')?.value || 'QRIS';
         
-        // 2. Siapkan data JSON untuk dikirim ke API Admin
+      // 2. Siapkan data JSON untuk dikirim ke API Admin
         const payload = {
           buyer_name: document.getElementById('buyer-name')?.value.trim(),
           buyer_phone: document.getElementById('buyer-phone')?.value.trim(),
