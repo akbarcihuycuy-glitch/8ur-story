@@ -888,8 +888,8 @@ document.addEventListener('DOMContentLoaded', function () {
           }))
         };
 
-        // 3. Tembak API Server Admin Anda
-        const response = await fetch('https://8ur-story-admin.onrender.com/api/orders', {
+      // 3. Tembak API Server Admin Anda
+        const response = await fetch('https://eightur-story-admin.onrender.com/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
