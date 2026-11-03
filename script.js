@@ -868,14 +868,24 @@ document.addEventListener('DOMContentLoaded', function () {
         const cartData = JSON.parse(localStorage.getItem('8urStoryCart')) || [];
         const selectedPayment = document.querySelector('input[name="payment"]:checked')?.value || 'QRIS';
         
-      // 2. Siapkan data JSON untuk dikirim ke API Admin
+      // Fungsi helper untuk mengubah gambar fisik menjadi teks Base64
+        const fileToBase64 = (file) => new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (error) => reject(error);
+        });
+
+        const proofBase64 = await fileToBase64(proof.files[0]);
+
+        // 2. Siapkan data JSON untuk dikirim ke API Admin
         const payload = {
           buyer_name: document.getElementById('buyer-name')?.value.trim(),
           buyer_phone: document.getElementById('buyer-phone')?.value.trim(),
           buyer_email: document.getElementById('buyer-email')?.value.trim(),
           buyer_address: document.getElementById('buyer-address')?.value.trim(),
           payment_method: selectedPayment,
-          // (Data gambar belum ikut dikirim sementara untuk memverifikasi API pesanan text bekerja)
+          payment_proof_base64: proofBase64, // <-- Gambar disisipkan di sini
           items: cartData.map(item => ({
             product_key: (item.product.toLowerCase().includes('hoodie')) ? 'hoodie' : 
                          (item.product.toLowerCase().includes('panjang')) ? 'kaos-panjang' :
