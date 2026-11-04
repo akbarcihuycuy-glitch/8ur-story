@@ -928,6 +928,19 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('success-order-id').textContent = result.orderId;
         }
         
+        // Simpan data pesanan agar tombol "Unduh Invoice (PDF)" di pop-up berfungsi
+        window.currentOrderData = {
+            orderId: result.orderId,
+            name: payload.buyer_name,
+            email: payload.buyer_email,
+            phone: payload.buyer_phone,
+            address: payload.buyer_address,
+            paymentMethod: payload.payment_method,
+            date: new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }),
+            total: checkoutTotal,
+            items: cartData
+        };
+        
         // Jalankan sistem invoice email (dijaga sesuai fungsi asli toko)
         // window.currentOrderData = { ... };
         // if (typeof sendEmailInvoice === 'function') {
