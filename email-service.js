@@ -4,7 +4,7 @@
    ============================================================ */
 
 // 1. URL WEB APP GOOGLE APPS SCRIPT RESMI
-const GAS_URL = "https://script.google.com/macros/s/AKfycbz1Fya9tFRPkML3h6s_llVa5jfRtANoiH73e_3lRILzybImK98k9n6v6PPUCksGdnzvMw/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzpzEgX91PV1xniCtRXukVj_Akh_s0u0uOgcIvhdYZo-Panbom1RCit1TOVd0CCgB5WZw/exec";
 
 // 2. FUNGSI KIRIM EMAIL KONFIRMASI AWAL (MENUNGGU VERIFIKASI)
 function sendEmailInvoice(orderData) {
