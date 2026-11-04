@@ -1,17 +1,18 @@
 /* ============================================================
-   8UR STORY — email-service.js (v4.0 - Server Pribadi Google)
+   8UR STORY — email-service.js (v5.0 - Terintegrasi PRD v1.1)
    Khusus menangani Email Otomatis & Download Invoice PDF
    ============================================================ */
 
-// 1. URL WEB APP GOOGLE APPS SCRIPT ANDA
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyfz_YBfqbgsiKUhs1bqQPzcS3KipAsxjH4coZq9qAE6fy6g03vj_RQzwN2Js9HuYOX6w/exec";
+// 1. URL WEB APP GOOGLE APPS SCRIPT RESMI
+const GAS_URL = "https://script.google.com/macros/s/AKfycbz1Fya9tFRPkML3h6s_llVa5jfRtANoiH73e_3lRILzybImK98k9n6v6PPUCksGdnzvMw/exec";
 
-// 2. FUNGSI KIRIM EMAIL VIA GOOGLE SERVER (100% ANTI SPAM)
+// 2. FUNGSI KIRIM EMAIL KONFIRMASI AWAL (MENUNGGU VERIFIKASI)
 function sendEmailInvoice(orderData) {
-    // Merakit Tabel Produk E-Commerce dengan Badge CSS
+    if (!orderData || !orderData.email) return;
+
     let itemsHTML = `<table style="width: 100%; border-collapse: collapse; font-family: Arial, Helvetica, sans-serif;">`;
     
-    orderData.items.forEach((item, idx) => {
+    (orderData.items || []).forEach((item, idx) => {
         const unitPrice = item.pricePerItem 
             ? item.pricePerItem.toLocaleString('id-ID') 
             : item.totalPrice.toLocaleString('id-ID');
@@ -43,9 +44,10 @@ function sendEmailInvoice(orderData) {
     });
     itemsHTML += `</table>`;
 
-    // Siapkan data (*payload*) untuk dikirim ke Google Apps Script
     const payload = {
+        type: 'pending',
         to_email: orderData.email,
+        buyer_email: orderData.email,
         buyer_name: orderData.name,
         order_id: orderData.orderId,
         order_date: orderData.date,
@@ -54,7 +56,6 @@ function sendEmailInvoice(orderData) {
         total_price: orderData.total.toLocaleString('id-ID')
     };
 
-    // Mengirim HTTP POST langsung ke server Gmail (Mencegah blokir CORS)
     fetch(GAS_URL, {
         method: 'POST',
         headers: {
@@ -65,7 +66,7 @@ function sendEmailInvoice(orderData) {
     .then(response => response.json())
     .then(result => {
         if (result.status === "success") {
-            console.log("SUKSES! Email Invoice resmi terkirim ke: " + orderData.email);
+            console.log("SUKSES! Email konfirmasi pesanan terkirim ke: " + orderData.email);
         } else {
             console.error("Gagal mengirim email (GAS error):", result.message);
         }
@@ -127,12 +128,12 @@ function downloadInvoicePDF(orderData) {
                         <div style="color: #6B7280; font-size: 11px; margin-top: 2px;">Kota Bekasi, Jawa Barat, Indonesia</div>
                     </td>
                     <td style="vertical-align: top; text-align: right;">
-                        <div style="color: #111827; font-size: 22px; font-weight: 900; letter-spacing: 1.5px;">INVOICE</div>
+                        <div style="color: #111827; font-size: 22px; font-weight: 900; letter-spacing: 1.5px;">BUKTI PESANAN</div>
                         <div style="color: #374151; font-size: 12px; margin-top: 6px;"><strong>No. Pesanan:</strong> #${orderData.orderId}</div>
                         <div style="color: #6B7280; font-size: 11px; margin-top: 2px;"><strong>Tanggal:</strong> ${orderData.date}</div>
                         <div style="margin-top: 8px;">
-                            <span style="display: inline-block; background-color: #10B981; color: #FFFFFF; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; letter-spacing: 0.5px;">
-                                PEMBAYARAN DITERIMA
+                            <span style="display: inline-block; background-color: #F59E0B; color: #FFFFFF; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; letter-spacing: 0.5px;">
+                                MENUNGGU VERIFIKASI ADMIN
                             </span>
                         </div>
                     </td>
@@ -177,7 +178,7 @@ function downloadInvoicePDF(orderData) {
                     <td style="width: 50%; background-color: #FEF2F2; border: 1.5px solid #FECACA; border-radius: 8px; padding: 14px 16px;">
                         <table style="width: 100%;">
                             <tr>
-                                <td style="font-size: 13px; font-weight: bold; color: #111827;">TOTAL PEMBAYARAN</td>
+                                <td style="font-size: 13px; font-weight: bold; color: #111827;">TOTAL TAGIHAN</td>
                                 <td style="font-size: 18px; font-weight: 900; color: #E83124; text-align: right;">Rp ${orderData.total.toLocaleString('id-ID')}</td>
                             </tr>
                         </table>
@@ -188,10 +189,10 @@ function downloadInvoicePDF(orderData) {
             <div style="border-top: 1px dashed #D1D5DB; padding-top: 16px; text-align: center;">
                 <div style="font-size: 12px; font-weight: bold; color: #111827;">Terima kasih telah berbelanja di 8UR STORY!</div>
                 <div style="font-size: 11px; color: #6B7280; margin-top: 4px;">
-                    Simpan bukti pembayaran ini sebagai referensi pesanan Anda. Tim kami akan menghubungi WhatsApp Anda untuk pengiriman resi.
+                    Invoice Resmi Lunas akan dikirimkan ke email Anda segera setelah pembayaran diverifikasi oleh Admin.
                 </div>
                 <div style="font-size: 10px; color: #9CA3AF; margin-top: 8px;">
-                    &copy; 2026 8UR STORY Official • Dokumen Sah &amp; Diterbitkan Otomatis oleh Sistem
+                    &copy; 2026 8UR STORY Official • Dokumen Diterbitkan Otomatis oleh Sistem
                 </div>
             </div>
         </div>
@@ -202,7 +203,7 @@ function downloadInvoicePDF(orderData) {
 
     const opt = {
         margin:       [10, 10, 10, 10],
-        filename:     `Invoice_8URSTORY_${orderData.orderId}.pdf`,
+        filename:     `Bukti_Pesanan_8URSTORY_${orderData.orderId}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  {
             scale: 2,
@@ -222,7 +223,7 @@ function downloadInvoicePDF(orderData) {
         html2pdf().set(opt).from(targetArea).save().then(() => {
             document.body.removeChild(wrapper);
             if (typeof window.showToast === 'function') {
-                window.showToast('Invoice PDF berhasil diunduh!', '📄');
+                window.showToast('Bukti Pesanan PDF berhasil diunduh!', '📄');
             }
         }).catch(err => {
             console.error('PDF Error:', err);
